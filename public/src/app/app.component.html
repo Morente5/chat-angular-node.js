@@ -1,0 +1,61 @@
+<div class="container-fluid">
+	<div class="card-group" *ngIf="loggedUser()">
+		<div class="card col-md-4 flex-col">
+			<div class="card-header">
+				{{user.name}} <i class="fa pull-right fa-sign-out" aria-hidden="true" (click)="logOut()"></i>
+			</div>
+			<ul class="list-group list-group-flush flex-grow" *ngIf="channels">
+				<li *ngFor="let chn of channels" class="list-group-item" [ngClass]="chn.active ? 'active' : ''">{{chn.name}}</li>
+			</ul>
+			<div class="card-footer">
+				<i class="fa fa-plus-square-o" aria-hidden="true"></i> Add channel
+			</div>
+		</div>
+
+		<div class="card col-md-8 flex-col">
+			<div class="card-header">
+				Chat
+			</div>
+			<div class="card-block card-msg flex-grow">
+				<ul class="messages" *ngIf="messages">
+					<li *ngFor="let message of messages"
+							class="message"
+							[ngClass]="[
+								isMine(message) ? 'right' : 'left',
+								message.first? 'first' : ''
+								]" >
+						<div class="avatar"></div>
+						<div class="text_wrapper">
+							<span class="user" *ngIf="message.first" >{{message.user.name}}</span>
+							<div class="text">
+								{{message.text}}
+							</div>
+						</div>
+					</li>
+				</ul>
+			</div>
+			<div class="card-footer">
+				<div class="input-group">
+					<input id="btn-input"
+									type="text"
+									contenteditable=true
+									class="form-control input-sm"
+									(keyup.enter)="sendMsg()"
+									placeholder="Type your message here..."
+									autocomplete="off"
+									[(ngModel)]="messageText"
+					>
+					<span class="input-group-btn">
+							<button class="btn btn-warning btn-sm" id="btn-chat" (click)='sendMsg()'>
+								Send</button>
+						</span>
+				</div>
+			</div>
+		</div>
+
+	</div>
+	<div *ngIf="!loggedUser()">
+		<input type="text" [(ngModel)]='tempUsername' (keyup.enter)="logInBtn()">
+		<button (click)='logInBtn()'></button>
+	</div>
+</div>
