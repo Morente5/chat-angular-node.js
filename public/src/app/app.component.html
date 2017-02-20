@@ -1,5 +1,5 @@
-<div class="container-fluid">
-	<div class="card-group" *ngIf="loggedUser()">
+<div class="container-fluid" *ngIf="loggedUser()">
+	<div class="card-group">
 		<div class="card col-md-4 flex-col">
 			<div class="card-header">
 				{{user.name}} <i class="fa pull-right fa-sign-out" aria-hidden="true" (click)="logOut()"></i>
@@ -18,34 +18,25 @@
 			</div>
 			<div class="card-block card-msg flex-grow">
 				<ul class="messages" *ngIf="messages">
-					<li *ngFor="let message of messages"
-							class="message"
-							[ngClass]="[
+					<li *ngFor="let message of messages" class="message" [ngClass]="[
 								isMine(message) ? 'right' : 'left',
 								message.first? 'first' : ''
-								]" >
+								]">
 						<div class="avatar"></div>
 						<div class="text_wrapper">
-							<span class="user" *ngIf="message.first" >{{message.user.name}}</span>
+							<span class="user" *ngIf="message.first">{{message.user.name}}</span>
 							<div class="text">
 								{{message.text}}
 							</div>
 						</div>
-					</li>
+						</li>
 				</ul>
 			</div>
 			<div class="card-footer">
 				<div class="input-group">
-					<input id="btn-input"
-									type="text"
-									contenteditable=true
-									class="form-control input-sm"
-									(keyup.enter)="sendMsg()"
-									placeholder="Type your message here..."
-									autocomplete="off"
-									[(ngModel)]="messageText"
-					>
-					<span class="input-group-btn">
+					<input id="btn-input" type="text" contenteditable=true class="form-control input-sm" (keyup.enter)="sendMsg()" placeholder="Type your message here..."
+						autocomplete="off" [(ngModel)]="messageText">
+						<span class="input-group-btn">
 							<button class="btn btn-warning btn-sm" id="btn-chat" (click)='sendMsg()'>
 								Send</button>
 						</span>
@@ -54,8 +45,12 @@
 		</div>
 
 	</div>
-	<div *ngIf="!loggedUser()">
-		<input type="text" [(ngModel)]='tempUsername' (keyup.enter)="logInBtn()">
-		<button (click)='logInBtn()'></button>
+</div>
+
+<div class="container" *ngIf="!loggedUser()">
+	<label for="lgFormGroupInput" class="col-sm-8 col-form-label col-form-label-lg">Select your username:</label>
+	<div class="col-sm-8">
+		<input type="text" [(ngModel)]="tempUsername" (keyup.enter)="logInBtn()" class="form-control form-control-lg" id="lgFormGroupInput">
+		<button (click)="logInBtn()" class="btn btn-primary">Confirm</button>
 	</div>
 </div>
