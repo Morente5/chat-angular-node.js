@@ -6,7 +6,6 @@ export class Channel {
   priv: boolean;
   users: Array<User>;
   avatar;
-  messages: Array<Message>;
 
   constructor(users: Array<User>, priv: boolean = true, id?: string) {
     this.users = users;
@@ -14,7 +13,6 @@ export class Channel {
     this.priv = priv;
     this.id = this.priv ? this.users.map( user => `@${user.name}` ).join('') : id;
     this.avatar = '';
-    this.messages = [];
   }
 
   addUser(user: User) {
@@ -27,7 +25,7 @@ export class Channel {
   sortUsers() {
     this.users.sort( (a, b) => (a.name > b.name) ? 1 : ((b.name > a.name) ? -1 : 0) );
   }
-
+/*
   addMessage(author, text) {
     let msg;
     // if message is first
@@ -37,5 +35,5 @@ export class Channel {
       msg = this.messages.push(new Message(author, text, this));
     }
     this.messages.push(msg);
-  }
+  }*/
 }

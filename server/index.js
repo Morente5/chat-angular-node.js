@@ -6,9 +6,10 @@ var io = require('socket.io')(server);
 app.use(express.static('public/dist'));
 
 var connectedUsers = [{ name: 'Alex', avatar: '', status: '' }];
-var channels = [{ id: '#general', priv: true, users: [], avatar: '', messages: [] },
-{ id: '#offtopic', priv: true, users: [], avatar: '', messages: [] }
+var channels = [{ id: '#general', priv: true, users: [], avatar: '' },
+{ id: '#offtopic', priv: true, users: [], avatar: '' }
 ];
+var messages = { '#general': [{author: connectedUsers[0], text: 'Welcome', first: false}] };
 
 
 //socket.join() to enter rooms
@@ -22,7 +23,7 @@ io.on('connection', function (socket) {
         if ( !connectedUsers.find( function(connuser) { return socket.user.name === connuser.name;}) ) {
             connectedUsers.push(user);
             io.sockets.emit('update', channels, connectedUsers);
-            console.log('ssslogin', connectedUsers);
+            console.log(user.name, 'logged in');
         }
     });
     socket.on('loggedoff', function () {
@@ -35,10 +36,9 @@ io.on('connection', function (socket) {
     });
 
     socket.on('enterchannel', function(channel) {
-        connected.push(socket.user);
-        console.log(socket.user.name + ' connected');
-        console.log(connected.map(user => user.name));  // List connected names
-        socket.emit('connected', connected);
+        connectedUsers.push(socket.user);
+        socket.join(channel.id);
+        socket.emit('loadmsgs', messages[channel.id]);
     });
 
 
@@ -48,7 +48,7 @@ io.on('connection', function (socket) {
             io.in(room).emit('user:disconnect', {id: socket.id});
         })*/
         
-      io.sockets.emit('update', channels, connectedUsers);
+        io.sockets.emit('update', channels, connectedUsers);  // All people see all messages?
     });
 
 });

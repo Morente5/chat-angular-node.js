@@ -1,4 +1,4 @@
-import { Component, OnInit, NgZone } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Subject } from 'rxjs/Subject';
 import { Observable } from 'rxjs/Observable';
 import { LoginService } from './../../services/login.service';
@@ -14,13 +14,13 @@ export class UserComponent implements OnInit {
   nombre = 'hola';
   logged: boolean;
 
-  constructor(private loginService: LoginService, private zone: NgZone) {
+  constructor(private loginService: LoginService) {
 
     this.loginService.currentUserObs().subscribe( user => {
-      console.log(user.name);
+      //console.log(user.name);
       this.user = user;
       //this.nombre = user.name;
-      this.zone.run( () => this.nombre = user.name );
+      this.nombre = user.name;
     } );
 
     this.loginService.loggedInObs().subscribe(log => {

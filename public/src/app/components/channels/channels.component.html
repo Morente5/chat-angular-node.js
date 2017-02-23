@@ -1,3 +1,10 @@
 <ul *ngIf="channels" class="list-group list-group-flush">
-  <li *ngFor="let chn of showchannels" class="list-group-item" [ngClass]="chn.active ? 'active' : ''">{{chn.showname}}</li>
+  <li 
+    *ngFor="let chn of showChannels"
+    class="list-group-item"
+    [ngClass]="isSelected(chn) ? 'active' : ''"
+    (click)="enterChannel(chn)"
+  >
+    {{chn.showname}}
+  </li>
 </ul>

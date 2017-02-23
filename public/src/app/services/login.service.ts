@@ -1,39 +1,40 @@
 import { Injectable } from '@angular/core';
-import { Subject } from 'rxjs/Subject';
+
+import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { Observable } from 'rxjs/Observable';
-import { User } from '../model/user';
-import { Channel } from '../model/channel';
-import { ChannelsComponent } from './../components/channels/channels.component';
-// import { LoginComponent } from '../components/login/login.component';
+import { LocalStorageService } from 'angular-2-local-storage';
 
 import * as io from 'socket.io-client';
-import { LocalStorageService } from 'angular-2-local-storage';
-import { ChannelsService } from './channels.service';
+
+//import { ChannelsService } from './channels.service';
+
+import { User } from '../model/user';
+import { Channel } from '../model/channel';
 
 @Injectable()
 export class LoginService {
   currentUser: User;
-  subjectCurrentUser: Subject<User> = new Subject<User>();
+  subjectCurrentUser: BehaviorSubject<User> = new BehaviorSubject<User>(new User(''));
 
   channels: Array<Channel>;
-  subjectChannels: Subject<Array<Channel>> = new Subject<Array<Channel>>();
-  subjectUsers: Subject<Array<User>> = new Subject<Array<User>>();
+  subjectChannels: BehaviorSubject<Array<Channel>> = new BehaviorSubject<Array<Channel>>([]);
+  subjectUsers: BehaviorSubject<Array<User>> = new BehaviorSubject<Array<User>>([]);
 
   users: Array<User> = [];
   tempUsername: string;
 
-  subjectError: Subject<boolean> = new Subject<boolean>();
+  subjectError: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
+
   socket: SocketIOClient.Socket;
 
   loggedIn: boolean;
-  subjectLoggedIn: Subject<boolean> = new Subject<boolean>();
+  subjectLoggedIn: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
 
   constructor(
     private ls: LocalStorageService,
-    private channelsService: ChannelsService
+    //private channelsService: ChannelsService
   ) {
   }
-
 
   loadLogin() {
     this.availableChannelsObs().subscribe(chnls => this.channels = chnls);
@@ -46,13 +47,14 @@ export class LoginService {
       this.subjectChannels.next(channels);
       this.subjectUsers.next(users);
       // Login
-      if (this.loggedUserLS() && !this.chosen()) {  // Log in if username stored in LS and not already chosen
-        this.subjectError.next(false);
+      if (this.loggedUserLS() && !this.chosen()) {  // If username stored in LS
+        //this.subjectError.next(false);  // TO-DO
         this.login(this.loggedUserLS());
         this.load(channels, users);
       } else {
-        //this.subjectError.next(true);
+        console.log('si entras aqui malo.');
         this.logout();
+        //this.subjectError.next(true);
       }
     });
 
@@ -68,7 +70,7 @@ export class LoginService {
     this.subjectCurrentUser.next(user);
     this.subjectLoggedIn.next(true);
     this.socket.emit('loggedin', this.currentUser);
-    // this.channelsService.enterChannel(this.channels[0]);
+    //this.channelsService.enterChannel(this.channels[0]);
   }
 
   logout() {
@@ -77,7 +79,6 @@ export class LoginService {
     this.subjectCurrentUser.next(new User(''));
     this.socket.emit('loggedoff');
   }
-
 
   load(channels, users) {
     this.subjectChannels.next(channels);
@@ -93,21 +94,8 @@ export class LoginService {
     console.log(this.channels);
   }
 
-  // Observables
-  currentUserObs(): Observable<User> {  // Current User
-    return this.subjectCurrentUser.asObservable();
-  }
-  getErrorObs(): Observable<boolean> {  // Name error
-    return this.subjectError.asObservable();
-  }
-  availableChannelsObs(): Observable<Array<Channel>> {  // Channels
-    return this.subjectChannels.asObservable();
-  }
-  loggedUsersObs(): Observable<Array<User>> {  // Users
-    return this.subjectUsers.asObservable();
-  }
-  loggedInObs(): Observable<boolean> {  // Users
-    return this.subjectLoggedIn.asObservable();
+  enterChannel(channel) {
+    this.socket.emit('enterchannel', channel);
   }
 
   // Local Storage
@@ -116,9 +104,9 @@ export class LoginService {
       return new User(this.ls.get('user')['name'], this.ls.get('user')['avatar'], this.ls.get('user')['status']);
     }
   }
+
   setUserLS(user: User) {
     this.ls.set('user', user);
-    //console.log(user.name, 'added to LS');
   }
   logoutLS() {
     this.ls.clearAll();
@@ -133,5 +121,23 @@ export class LoginService {
     });
     return false;
   }
+
+  // Observables
+  currentUserObs(): Observable<User> {  // Current User
+    return this.subjectCurrentUser.asObservable().share();
+  }
+  getErrorObs(): Observable<boolean> {  // Name error
+    return this.subjectError.asObservable().share();
+  }
+  availableChannelsObs(): Observable<Array<Channel>> {  // Channels
+    return this.subjectChannels.asObservable().share();
+  }
+  loggedUsersObs(): Observable<Array<User>> {  // Users
+    return this.subjectUsers.asObservable().share();
+  }
+  loggedInObs(): Observable<boolean> {  // is logged in
+    return this.subjectLoggedIn.asObservable().share();
+  }
+
 
 }

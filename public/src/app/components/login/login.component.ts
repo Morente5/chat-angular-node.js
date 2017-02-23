@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Subject } from 'rxjs/Subject';
 import { Observable } from 'rxjs/Observable';
 import { LoginService } from './../../services/login.service';
-import { ChannelsComponent } from './../channels/channels.component';
+//import { ChannelsComponent } from './../channels/channels.component';
 import { User } from './../../model/user';
 
 @Component({
