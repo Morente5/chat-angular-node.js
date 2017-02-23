@@ -1,0 +1,20 @@
+<div class="container-fluid" *ngIf="loggedIn">
+	<div class="card-group">
+		<div class="card col-md-4 flex-col">
+			<user class="card-header"></user>
+			<channels class="flex-grow"></channels>
+			<channel-add class="card-footer"></channel-add>
+		</div>
+
+		<div class="card col-md-8 flex-col">
+			<chat-status></chat-status>
+			<chat-messages class="flex-grow"></chat-messages>
+			<chat-input class="card-footer"></chat-input>
+		</div>
+
+	</div>
+</div>
+
+<div class="container" *ngIf="!loggedIn">
+	<login></login>
+</div>

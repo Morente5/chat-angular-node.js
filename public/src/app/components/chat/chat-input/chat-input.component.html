@@ -1,0 +1,16 @@
+<div class="input-group">
+  <input id="btn-input"
+    type="text"
+    contenteditable=true
+    class="form-control input-sm"
+    (keyup.enter)="sendMsg()"
+    placeholder="Type your message here..."
+    autocomplete="off"
+    [(ngModel)]="messageText"
+  >
+  <span class="input-group-btn">
+    <button class="btn btn-warning btn-sm" id="btn-chat" (click)='sendMsg()'>
+      Send
+    </button>
+  </span>
+</div>

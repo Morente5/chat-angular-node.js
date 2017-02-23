@@ -1,6 +1,6 @@
 webpackJsonp([2,4],{
 
-/***/ 195:
+/***/ 25:
 /***/ (function(module, exports) {
 
 /*
@@ -57,16 +57,16 @@ module.exports = function() {
 
 /***/ }),
 
-/***/ 316:
+/***/ 319:
 /***/ (function(module, exports, __webpack_require__) {
 
 // style-loader: Adds some css to the DOM by adding a <style> tag
 
 // load the styles
-var content = __webpack_require__(483);
+var content = __webpack_require__(495);
 if(typeof content === 'string') content = [[module.i, content, '']];
 // add the styles to the DOM
-var update = __webpack_require__(515)(content, {});
+var update = __webpack_require__(541)(content, {});
 if(content.locals) module.exports = content.locals;
 // Hot Module Replacement
 if(false) {
@@ -84,22 +84,22 @@ if(false) {
 
 /***/ }),
 
-/***/ 483:
+/***/ 495:
 /***/ (function(module, exports, __webpack_require__) {
 
-exports = module.exports = __webpack_require__(195)();
+exports = module.exports = __webpack_require__(25)();
 // imports
 
 
 // module
-exports.push([module.i, "/* You can add global styles to this file, and also import other style files */\nhtml, body {\n    height: 100%;\n}\n", ""]);
+exports.push([module.i, "/* You can add global styles to this file, and also import other style files */\nhtml, body {\n    height: 100%;\n}\n\n.container-fluid, .row {\n  height:100%;\n  padding: 0;\n}\n\n.flex-row, .flex-row > div[class*='col-'] {  \n    display: -webkit-box;\n    display: -ms-flexbox;\n    display: flex;\n    -webkit-box-flex: 0;\n        -ms-flex: 0 auto;\n            flex: 0 auto;\n    height:100%;\n}\n\n.flex-col {\n    display: -webkit-box;\n    display: -ms-flexbox;\n    display: flex;\n    -webkit-box-flex: 1;\n        -ms-flex: 1;\n            flex: 1;\n    -webkit-box-orient: vertical;\n    -webkit-box-direction: normal;\n        -ms-flex-flow: column nowrap;\n            flex-flow: column nowrap;\n}\n\n.flex-grow {\n    display: -webkit-box;\n    display: -ms-flexbox;\n    display: flex;\n    -webkit-box-flex: 2;\n        -ms-flex: 2;\n            flex: 2;\n}\n.card-group {\n  height:100%;\n}\n\n.card {\n  border-radius: 0;\n  min-height: 100%;\n  padding:0;\n}\n\n\n.chat {\n    list-style: none;\n    margin: 0;\n    padding: 0;\n}\n\n.card-msg {\n  padding: 0;\n}\n\n.card-block {\n  overflow-y: scroll;\n}\n\n[placeholder]:empty:before {\n    content: attr(placeholder);\n    color: #555; \n}\n\n[placeholder]:empty:focus:before {\n    content: \"\";\n}\n.fa-sign-out {\n  font-size: 1.5em;\n}\n.fa-plus-square-o {\n  font-size: 1.5em;\n  vertical-align: bottom;\n}", ""]);
 
 // exports
 
 
 /***/ }),
 
-/***/ 515:
+/***/ 541:
 /***/ (function(module, exports) {
 
 /*
@@ -352,13 +352,13 @@ function updateLink(linkElement, obj) {
 
 /***/ }),
 
-/***/ 523:
+/***/ 549:
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(316);
+module.exports = __webpack_require__(319);
 
 
 /***/ })
 
-},[523]);
+},[549]);
 //# sourceMappingURL=styles.bundle.js.map

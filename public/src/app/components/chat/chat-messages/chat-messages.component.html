@@ -1,0 +1,19 @@
+<ul class="messages flex-grow">
+  <div *ngIf="messages">
+    <li *ngFor="let message of messages"
+        class="message"
+        [ngClass]="[
+          isMine(message) ? 'right' : 'left',
+          message.first? 'first' : ''
+          ]"
+    >
+      <div class="avatar"></div>
+      <div class="text_wrapper">
+        <span class="user" *ngIf="message.first">{{message.user.name}}</span>
+        <div class="text">
+          {{message.text}}
+        </div>
+      </div>
+    </li>
+  </div>
+</ul>
