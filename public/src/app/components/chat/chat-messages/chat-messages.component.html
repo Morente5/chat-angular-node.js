@@ -1,6 +1,6 @@
 <ul class="messages flex-grow">
-  <div *ngIf="messages">
-    <li *ngFor="let message of messages"
+  <span *ngIf="selectedChannel.id && messages[selectedChannel.id]" class="expand">
+    <li *ngFor="let message of messages[selectedChannel.id]"
         class="message"
         [ngClass]="[
           isMine(message) ? 'right' : 'left',
@@ -9,11 +9,12 @@
     >
       <div class="avatar"></div>
       <div class="text_wrapper">
-        <span class="user" *ngIf="message.first">{{message.user.name}}</span>
+        <span class="user" *ngIf="message.first">{{message.author.name}}</span>
         <div class="text">
           {{message.text}}
         </div>
+        <time>{{message.sentAt.toLocaleString()}}</time>
       </div>
     </li>
-  </div>
+  </span>
 </ul>

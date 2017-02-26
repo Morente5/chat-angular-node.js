@@ -1,39 +1,18 @@
 import { User } from './user';
-import { Message } from './message';
 
 export class Channel {
   id: string;
   priv: boolean;
-  users: Array<User>;
+  user: User;
   avatar;
+  typing = [];
 
-  constructor(users: Array<User>, priv: boolean = true, id?: string) {
-    this.users = users;
-    this.sortUsers();
+  constructor(priv: boolean = true, id?: string, user?: User, avatar?, typing = []) {
     this.priv = priv;
-    this.id = this.priv ? this.users.map( user => `@${user.name}` ).join('') : id;
-    this.avatar = '';
+    this.id = priv ? user.id : id;
+    this.user = priv ? user : null;
+    this.avatar = avatar;
+    this.typing = typing;
   }
 
-  addUser(user: User) {
-    if (!this.priv) {
-      this.users.push(user);
-      this.sortUsers();
-    }
-  }
-
-  sortUsers() {
-    this.users.sort( (a, b) => (a.name > b.name) ? 1 : ((b.name > a.name) ? -1 : 0) );
-  }
-/*
-  addMessage(author, text) {
-    let msg;
-    // if message is first
-    if ( !this.messages.slice(-1)[0] || !this.messages.slice(-1)[0].isFrom(author) ) {
-      msg = this.messages.push(new Message(author, text, this, true));
-    } else {
-      msg = this.messages.push(new Message(author, text, this));
-    }
-    this.messages.push(msg);
-  }*/
 }

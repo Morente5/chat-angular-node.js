@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
-import { Subject } from 'rxjs/Subject';
-import { Observable } from 'rxjs/Observable';
+
 import { LoginService } from './../../services/login.service';
-//import { ChannelsComponent } from './../channels/channels.component';
+import { SocketService } from './../../services/socket.service';
+
 import { User } from './../../model/user';
 
 @Component({
@@ -12,23 +12,37 @@ import { User } from './../../model/user';
 })
 export class LoginComponent implements OnInit {
   inputUsername: string;
-  nameError: boolean;
+  inputStatus: string;
+  avatarImages = ['man.png',
+                  'boy.png',
+                  'girl.png',
+                  'man-2.png',
+                  'man-3.png'];
+  users: Array<User>;
+  selectedAvatar: string;
   constructor(
-    private loginService: LoginService
+    private loginService: LoginService,
+    private socketService: SocketService
   ) {
-    this.loginService.getErrorObs().subscribe( nameError => this.nameError = nameError );
+    this.socketService.subjectUsers.subscribe(users => this.users = users);
   }
 
   ngOnInit() {
   }
 
   loginBtn() {
-    if (this.inputUsername.trim()) {
-      const tempUser = new User(this.inputUsername.trim());
-      if (!this.loginService.chosen(tempUser)) {
-        this.loginService.login(tempUser);
-      }
+    if (this.inputUsername && this.inputUsername.trim()) {
+      this.loginService.login(
+        new User(this.inputUsername.trim().replace(/[\W_]+/g, '-'), this.selectedAvatar || 'man-3.png', this.inputStatus)
+      );
     }
+  }
+
+  available() {
+    if (this.inputUsername) {
+      return !this.users.find(user => user.name === this.inputUsername.trim().replace(/[\W_]+/g, '-'));
+    }
+    return false;
   }
 
 }

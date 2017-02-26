@@ -1,9 +1,8 @@
 import { Injectable } from '@angular/core';
 
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
-import { Observable } from 'rxjs/Observable';
 
-import { LoginService } from './login.service';
+import { SocketService } from './socket.service';
 
 import { Channel } from '../model/channel';
 import { Message } from '../model/message';
@@ -11,29 +10,58 @@ import { User } from '../model/user';
 
 @Injectable()
 export class ChannelsService {
-  messages: Object;
+  loggedUser: User;
+  messages: Object = {};
+  subjectMessages: BehaviorSubject<any> = new BehaviorSubject<any>(this.messages);
   channels: Array<Channel>;
   selectedChannel: Channel;
-  subjectSelectedChannel: BehaviorSubject<Channel> = new BehaviorSubject<Channel>(new Channel([new User(''), new User('')], false, ''));
+  subjectSelectedChannel: BehaviorSubject<any> = new BehaviorSubject<any>(new Channel(null, null, null));
   constructor(
-    private loginService: LoginService
+    private socketService: SocketService
   ) {
-    this.loginService.availableChannelsObs().subscribe(chnls => this.channels = chnls);
-    this.selectedChannelObs().subscribe(channel => this.selectedChannel = channel);
 
+    this.subjectMessages.subscribe(messages => this.messages = messages);
+    this.socketService.subjectMessage.subscribe((message: Message) => {
+      if (message) {
+        const chnID = message.author.name !== this.loggedUser.name && message.channel.priv ? message.author.id : message.channel.id;
+        if (!this.messages.hasOwnProperty(chnID)) {
+          this.messages[chnID] = [];
+        }
+        message.first = !this.messages.hasOwnProperty(chnID) ||
+                        this.messages[chnID].length === 0 ||
+                        message.author.name !== this.messages[chnID].slice(-1).pop().author.name;
+        this.messages[chnID].push(message);
+        this.subjectMessages.next(this.messages);
+      }
+      //console.log('mensajes', this.messages);
+    });
+
+    this.socketService.subjectCurrentUser.subscribe(usr => this.loggedUser = usr);
+    this.socketService.subjectChannels.subscribe(channels => this.channels = channels);
+    this.subjectSelectedChannel.subscribe(chn => this.selectedChannel = chn);
   }
 
   enterChannel(channel: Channel) {
-    console.log(channel);
-    this.loginService.enterChannel(channel);
-
-    //this.loginService.socket.on('loadmsgs', messages => this.messages[channel.id] = messages);
-    this.subjectSelectedChannel.next(channel);
+    this.subjectSelectedChannel.next(new Channel(channel.priv, channel.id, channel.user, channel.avatar));
   }
 
-  // Observables
-
-  selectedChannelObs() {
-    return this.subjectSelectedChannel.asObservable();
+  sendMsg(messageText) {
+    let chnID = this.selectedChannel.id;
+    let userName = this.loggedUser.name;
+    let newMessage = new Message(
+      this.loggedUser,
+      this.selectedChannel,
+      messageText
+    );
+    this.socketService.sendMsg(newMessage);
   }
+
+  typing() {
+    this.socketService.typing(this.selectedChannel);
+  }
+
+  stopTyping() {
+    this.socketService.stopTyping(this.selectedChannel);
+  }
+
 }

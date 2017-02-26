@@ -1,6 +1,29 @@
 /* You can add global styles to this file, and also import other style files */
 html, body {
-    height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  background-image: -ms-linear-gradient(bottom, #2790B0 0%, #2B4E72 100%);
+    /* Mozilla Firefox */ 
+background-image: -moz-linear-gradient(bottom, #2790B0 0%, #2B4E72 100%);
+    /* Opera */ 
+background-image: -o-linear-gradient(bottom, #2790B0 0%, #2B4E72 100%);
+    /* Webkit (Safari/Chrome 10) */ 
+background-image: -webkit-gradient(linear, left bottom, left top, color-stop(0, #2790B0), color-stop(1, #2B4E72));
+    /* Webkit (Chrome 11+) */ 
+background-image: -webkit-linear-gradient(bottom, #2790B0 0%, #2B4E72 100%);
+    /* W3C Markup, IE10 Release Preview */ 
+background-image: linear-gradient(to top, #2790B0 0%, #2B4E72 100%);
+
+
+}
+
+.app {
+  width: 100%;
+  height: 100%;
+  min-height: 350px;
 }
 
 .container-fluid, .row {
@@ -9,36 +32,37 @@ html, body {
 }
 
 .flex-row, .flex-row > div[class*='col-'] {  
-    display: -webkit-box;
-    display: -moz-box;
-    display: -ms-flexbox;
-    display: -webkit-flex;
-    display: flex;
-    flex: 0 auto;
-    height:100%;
+  display: -webkit-box;
+  display: -moz-box;
+  display: -ms-flexbox;
+  display: -webkit-flex;
+  display: flex;
+  flex: 0 auto;
+  height:100%;
 }
 
 .flex-col {
-    display: -webkit-box;
-    display: -moz-box;
-    display: -ms-flexbox;
-    display: -webkit-flex;
-    display: flex;
-    flex: 1;
-    flex-flow: column nowrap;
+  display: -webkit-box;
+  display: -moz-box;
+  display: -ms-flexbox;
+  display: -webkit-flex;
+  display: flex;
+  flex: 1;
+  flex-flow: column nowrap;
 }
 
 .flex-grow {
-    display: -webkit-box;
-    display: -moz-box;
-    display: -ms-flexbox;
-    display: -webkit-flex;
-    display: flex;
-    -webkit-flex: 2;
-    flex: 2;
+  display: -webkit-box;
+  display: -moz-box;
+  display: -ms-flexbox;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-flex: 2;
+  flex: 2;
 }
 .card-group {
   height:100%;
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
 }
 
 .card {
@@ -49,9 +73,9 @@ html, body {
 
 
 .chat {
-    list-style: none;
-    margin: 0;
-    padding: 0;
+  list-style: none;
+  margin: 0;
+  padding: 0;
 }
 
 .card-msg {
@@ -60,20 +84,139 @@ html, body {
 
 .card-block {
   overflow-y: scroll;
+  -ms-overflow-style: -ms-autohiding-scrollbar;
 }
 
 [placeholder]:empty:before {
-    content: attr(placeholder);
-    color: #555; 
+  content: attr(placeholder);
+  color: #555; 
 }
 
 [placeholder]:empty:focus:before {
-    content: "";
+  content: "";
 }
 .fa-sign-out {
   font-size: 1.5em;
+  margin: 9px;
 }
 .fa-plus-square-o {
   font-size: 1.5em;
   vertical-align: bottom;
+}
+
+*::-webkit-scrollbar {
+  width: 6px !important;
+  height: 6px !important;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: rgba(0,0,0,0.2);
+}
+
+@media screen and (min-width: 1070px) {
+  .app {
+    max-width: 1000px;
+    margin:0;
+    height: 90vh;
+    margin: auto 5vw;
+  }
+  .card-group{
+    border-radius: 5px;
+  }
+}
+
+@media screen and (max-width: 1070px) {
+  .card-header {
+    border-radius: 0;
+    border: 0;
+}
+}
+
+.card-header {
+  background-color: #95bce1;
+  border: 0;
+      border-radius: 0!important;
+}
+
+.card-footer {
+  background-color: #95bce1;
+  border: 0;
+      border-radius: 0!important;
+}
+
+#loginForm {
+  background-color: white;
+    padding: 60px;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+}
+
+@media screen and (max-width: 633px) {
+  #loginForm {
+  background-color: white;
+    padding: 50px 10px;
+  }
+}
+
+.form-control:disabled {
+    cursor: help;
+}
+
+.form-control:disabled, .form-control[readonly] {
+    background-color: #eceeef;
+    opacity: 1;
+}
+
+.card .avatar {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 20px;
+}
+
+.btn {
+  padding: 3px;
+  margin: 0!important;
+}
+
+.spinner {
+  width: 60px;
+  height: 60px;
+
+  position: relative;
+  margin: 180px auto;
+}
+
+.double-bounce1, .double-bounce2 {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background-color: white;
+  opacity: 0.6;
+  position: absolute;
+  top: 0;
+  left: 0;
+  
+  -webkit-animation: sk-bounce 2.0s infinite ease-in-out;
+  animation: sk-bounce 2.0s infinite ease-in-out;
+}
+
+.double-bounce2 {
+  -webkit-animation-delay: -1.0s;
+  animation-delay: -1.0s;
+}
+
+@-webkit-keyframes sk-bounce {
+  0%, 100% { -webkit-transform: scale(0.0) }
+  50% { -webkit-transform: scale(1.0) }
+}
+
+@keyframes sk-bounce {
+  0%, 100% { 
+    transform: scale(0.0);
+    -webkit-transform: scale(0.0);
+  } 50% { 
+    transform: scale(1.0);
+    -webkit-transform: scale(1.0);
+  }
 }

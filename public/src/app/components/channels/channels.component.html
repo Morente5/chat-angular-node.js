@@ -5,6 +5,7 @@
     [ngClass]="isSelected(chn) ? 'active' : ''"
     (click)="enterChannel(chn)"
   >
+    <img [src]="'assets/avatars/'+ chn.avatar || chn.user.avatar" class="img-fluid avatar"/>
     {{chn.showname}}
   </li>
 </ul>

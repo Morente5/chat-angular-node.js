@@ -16,6 +16,7 @@ import { ChannelAddComponent } from './components/channel-add/channel-add.compon
 
 import { LoginService } from './services/login.service';
 import { ChannelsService } from './services/channels.service';
+import { SocketService } from './services/socket.service';
 
 
 @NgModule({
@@ -38,7 +39,7 @@ import { ChannelsService } from './services/channels.service';
       storageType: 'localStorage'
     }),
   ],
-  providers: [ChannelsComponent, LoginService, ChannelsService],
+  providers: [SocketService, LoginService, ChannelsService],
   bootstrap: [WindowComponent]
 })
 export class AppModule { }

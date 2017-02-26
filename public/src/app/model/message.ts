@@ -9,7 +9,7 @@ export class Message {
   text: string;
   first: boolean;
 
-  constructor(author: User, text: string, channel: Channel, first: boolean = false) {
+  constructor(author: User, channel: Channel, text: string, first: boolean = false) {
     this.author = author;
     this.channel = channel;
     this.isRead = false;

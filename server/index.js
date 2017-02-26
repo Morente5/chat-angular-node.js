@@ -1,54 +1,120 @@
-var express = require('express');
-var app = express();
-var server = require('http').Server(app);
-var io = require('socket.io')(server);
+function isConnected(user) {
+    return connectedUsers.find(function (connuser) {
+        return user.name === connuser.name;
+    });
+}
+
+function disconnect(user) {
+    connectedUsers.forEach(function (usr, i) {
+        if (usr.name === user.name) {
+            connectedUsers.splice(i, 1);
+            console.log(usr.name, 'logged out');
+        }
+    });
+}
+
+
+var express = require('express'),
+    app = express(),
+    server = require('http').Server(app),
+    io = require('socket.io')(server),
+    dl = require("delivery"),
+    fl = require("fs");
 
 app.use(express.static('public/dist'));
 
-var connectedUsers = [{ name: 'Alex', avatar: '', status: '' }];
-var channels = [{ id: '#general', priv: true, users: [], avatar: '' },
-{ id: '#offtopic', priv: true, users: [], avatar: '' }
-];
-var messages = { '#general': [{author: connectedUsers[0], text: 'Welcome', first: false}] };
+var connectedUsers = [],
+    channels = [{ id: 'general', priv: false, avatar: '' },
+    { id: 'homework', priv: false, avatar: '' },
+    { id: 'offtopic', priv: false, avatar: '' }
+    ];
 
 
-//socket.join() to enter rooms
 io.on('connection', function (socket) {
-    socket.user = { name: '', avatar: '', status: '' };
 
+    var delivery = dl.listen(socket);
+
+    socket.user = { name: '', avatar: '', status: '' };
     socket.emit('load', channels, connectedUsers);
 
-    socket.on('loggedin', function (user) {
+
+    socket.on('login', function (user) {
+        user.id = socket.id;
         socket.user = user;
-        if ( !connectedUsers.find( function(connuser) { return socket.user.name === connuser.name;}) ) {
-            connectedUsers.push(user);
-            io.sockets.emit('update', channels, connectedUsers);
-            console.log(user.name, 'logged in');
+
+        connectedUsers.push(user);
+        socket.emit('logged-in', user);
+        console.log(user.name, 'logged in');
+        console.log('connected users', connectedUsers.map(function (a) { return a.name; }));
+
+        io.sockets.emit('load', channels, connectedUsers);
+    });
+
+    socket.on('sendMessage', function (message) {
+        console.log(message.channel.priv);
+        if (message.channel.priv) { //he añadido '.channel'
+            io.sockets.in(message.channel.id).emit('message', message);
+            socket.emit('message', message);
+        } else {
+            io.sockets.emit('message', message);
+        }
+
+    });
+
+    socket.on('logout', function () {
+        disconnect(socket.user);
+        console.log('connected users', connectedUsers.map(function (a) { return a.name; }));
+        io.sockets.emit('load', channels, connectedUsers);
+    });
+    socket.on('disconnect', function () {
+        disconnect(socket.user);
+        console.log('connected users', connectedUsers.map(function (a) { return a.name; }));
+        io.sockets.emit('load', channels, connectedUsers);  // All people see all messages?
+    });
+
+    socket.on('sendTyping', function (user, channel) {
+        if (channel) {
+            if (channel.priv) {
+                io.sockets.in(channel.id).emit('typing', user, channel);
+            } else {
+                socket.broadcast.emit('typing', user, channel);
+            }
         }
     });
-    socket.on('loggedoff', function () {
-        connectedUsers.forEach(function (user, i) {
-            if (user.name === socket.user.name) {
-                connectedUsers.splice(i, 1);
+    socket.on('sendStopTyping', function (user, channel) {
+        if (channel) {
+            if (channel.priv) {
+                io.sockets.in(channel.id).emit('stop-typing', user, channel);
+            } else {
+                socket.broadcast.emit('stop-typing', user, channel);
+            }
+        }
+    });
+
+    delivery.on('receive.success', function (file) {
+        var params = file.params;
+        console.log(params);
+        fs.writeFile(file.name, file.buffer, function (err) {
+            if (err) {
+                console.log('File could not be saved.');
+            } else {
+                console.log('File saved.');
             }
         });
-        io.sockets.emit('update', channels, connectedUsers);
     });
 
-    socket.on('enterchannel', function(channel) {
-        connectedUsers.push(socket.user);
-        socket.join(channel.id);
-        socket.emit('loadmsgs', messages[channel.id]);
-    });
+    delivery.on('delivery.connect', function (delivery) {
 
+        delivery.send({
+            name: 'sample-image.jpg',
+            path: './sample-image.jpg',
+            params: { foo: 'bar' }
+        });
 
-    socket.on('disconnect', function () {
-        /*socket.rooms.forEach( function(room) {
-            console.log(`${socket.user.name} disconnected`);
-            io.in(room).emit('user:disconnect', {id: socket.id});
-        })*/
-        
-        io.sockets.emit('update', channels, connectedUsers);  // All people see all messages?
+        delivery.on('send.success', function (file) {
+            console.log('File successfully sent to client!');
+        });
+
     });
 
 });
@@ -56,6 +122,5 @@ io.on('connection', function (socket) {
 const PORT = process.env.PORT || '3333';
 
 server.listen(PORT, function () {
-    const port = process.env.PORT || '3333';
     console.log(`Listening on port ${PORT}`);
 });

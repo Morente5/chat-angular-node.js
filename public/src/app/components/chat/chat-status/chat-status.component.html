@@ -1,3 +1,13 @@
 <div class="card-header">
-  Chat
+  <span *ngIf="selectedChannel.id" >{{channelShowName}}</span>&nbsp;
+  <span *ngIf="typingMsgs && typingMsgs[selectedChannel.id] && typingMsgs[selectedChannel.id].length !== 0">
+  <em class="pull-right" *ngIf="typingMsgs[selectedChannel.id].length === 1" >
+    <strong>{{typingMsgs[selectedChannel.id][0].name}}</strong> is typing...
+  </em>
+  <em class="pull-right" *ngIf="typingMsgs[selectedChannel.id].length > 1" >
+    <span *ngFor="let item of typingMsgs[selectedChannel.id].slice(0, -2)" ><strong>{{item.name}}</strong>, </span>
+    <span *ngFor="let item of typingMsgs[selectedChannel.id].slice(-2, typingMsgs[selectedChannel.id].length-1)" ><strong>{{item.name}}</strong> </span>and
+    <span *ngFor="let item of typingMsgs[selectedChannel.id].slice(-1, typingMsgs[selectedChannel.id].length)" ><strong>{{item.name}}</strong> </span>are typing...
+  </em>
+  </span>
 </div>

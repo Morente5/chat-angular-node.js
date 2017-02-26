@@ -1,12 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 
-import { Observable } from 'rxjs/Observable';
 import { User } from './model/user';
+import { SocketService } from './services/socket.service';
 import { LoginService } from './services/login.service';
-/*
-import * as io from 'socket.io-client';
-import { LocalStorageService } from 'angular-2-local-storage';
-*/
+
 @Component({
   selector: 'chat-window',
   templateUrl: './chat-window.component.html',
@@ -16,11 +13,14 @@ export class WindowComponent {
   loggedIn: boolean;
 
   constructor(
+    private socketService: SocketService,
     private loginService: LoginService
   ) {
-
-    this.loginService.loggedInObs().subscribe(logged => this.loggedIn = logged);
-    this.loginService.loadLogin();
+    this.socketService.subjectLoggedIn.subscribe(logged => this.loggedIn = logged);
+    this.socketService.subjectMessage.subscribe(message => {  // TODO if message is in channel
+      //const objDiv = document.querySelector('.card-msg');
+      //objDiv.scrollTop = objDiv.scrollHeight;
+    });
   }
 
   ngOnInit() {

@@ -1,4 +1,5 @@
-<div>
-  <span>{{nombre}}</span>
+<div id="userGrad">
+  <img [src]="'assets/avatars/'+ user.avatar" class="img-fluid avatar"/>
+  <span>{{user.name}}</span>
   <i class="fa pull-right fa-sign-out" aria-hidden="true" (click)="logout()"></i>
 </div>

@@ -4,13 +4,20 @@
     contenteditable=true
     class="form-control input-sm"
     (keyup.enter)="sendMsg()"
-    placeholder="Type your message here..."
+    [placeholder]="!selectedChannel.id ? 'First select a channel...' : 'Type your message here...'"
     autocomplete="off"
     [(ngModel)]="messageText"
+    (keyup)="typing($event)"
+    [disabled]="!selectedChannel.id"
   >
   <span class="input-group-btn">
-    <button class="btn btn-warning btn-sm" id="btn-chat" (click)='sendMsg()'>
-      Send
-    </button>
+    <input class="btn btn-warning btn-sm" type="submit" id="btn-chat" (click)='sendMsg()' (ngSubmit)="sendFile()"  [disabled]="!selectedChannel.id"
+      value="Send"
+    />
+    </span>
+    <span class="input-group-btn">
+    <label class="btn btn-info btn-file btn-sm" id="btn-chat-upload" (click)='uploadFile()' [ngClass]="{disabled: !selectedChannel.id}">
+      <i class="fa fa-upload" aria-hidden="true"></i><input type="file" style="display: none;" [disabled]="!selectedChannel.id">
+    </label>
   </span>
 </div>

@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
-import { Subject } from 'rxjs/Subject';
-import { Observable } from 'rxjs/Observable';
+
+import { SocketService } from './../../services/socket.service';
 import { LoginService } from './../../services/login.service';
+
 import { User } from './../../model/user';
 
 @Component({
@@ -10,20 +11,19 @@ import { User } from './../../model/user';
   styleUrls: ['./user.component.css']
 })
 export class UserComponent implements OnInit {
-  user: User = new User('hola');
-  nombre = 'hola';
+  user: User = new User('');
   logged: boolean;
 
-  constructor(private loginService: LoginService) {
+  constructor(
+    private socketService: SocketService,
+    private loginService: LoginService
+  ) {
 
-    this.loginService.currentUserObs().subscribe( user => {
-      //console.log(user.name);
+    this.socketService.subjectCurrentUser.subscribe( user => {
       this.user = user;
-      //this.nombre = user.name;
-      this.nombre = user.name;
     } );
 
-    this.loginService.loggedInObs().subscribe(log => {
+    this.socketService.subjectLoggedIn.subscribe(log => {
       this.logged = log;
     });
 

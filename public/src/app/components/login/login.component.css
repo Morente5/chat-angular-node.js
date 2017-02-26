@@ -1,0 +1,24 @@
+.center {
+  margin: auto;
+  position: absolute;
+  top: 40vh; left: 0; bottom: 0; right: 0;
+}
+
+.input_hidden {
+    position: absolute;
+    left: -9999px;
+}
+
+.selected {
+    background-color: #ccc;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+}
+
+.avatar label {
+    display: inline-block;
+    cursor: pointer;
+}
+
+#loginForm .avatar {
+  border-radius: 50%;
+}
