@@ -128,7 +128,7 @@ export class SocketService {
       });
     });
 
-    window.setTimeout( () => this.subjectReady.next(true), 1000);
+    window.setTimeout( () => this.subjectReady.next(true), 800);
   }
 
   login(user: User) {
