@@ -17,6 +17,7 @@ import { ChannelAddComponent } from './components/channel-add/channel-add.compon
 import { LoginService } from './services/login.service';
 import { ChannelsService } from './services/channels.service';
 import { SocketService } from './services/socket.service';
+import { ChatVideoComponent } from './components/chat/chat-video/chat-video.component';
 
 
 @NgModule({
@@ -28,7 +29,8 @@ import { SocketService } from './services/socket.service';
     ChatStatusComponent,
     LoginComponent,
     UserComponent,
-    ChannelAddComponent
+    ChannelAddComponent,
+    ChatVideoComponent
   ],
   imports: [
     BrowserModule,

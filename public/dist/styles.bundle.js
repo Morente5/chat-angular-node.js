@@ -1,6 +1,6 @@
-webpackJsonp([2,4],{
+webpackJsonp([3,5],{
 
-/***/ 25:
+/***/ 18:
 /***/ (function(module, exports) {
 
 /*
@@ -57,16 +57,16 @@ module.exports = function() {
 
 /***/ }),
 
-/***/ 324:
+/***/ 325:
 /***/ (function(module, exports, __webpack_require__) {
 
 // style-loader: Adds some css to the DOM by adding a <style> tag
 
 // load the styles
-var content = __webpack_require__(498);
+var content = __webpack_require__(502);
 if(typeof content === 'string') content = [[module.i, content, '']];
 // add the styles to the DOM
-var update = __webpack_require__(544)(content, {});
+var update = __webpack_require__(551)(content, {});
 if(content.locals) module.exports = content.locals;
 // Hot Module Replacement
 if(false) {
@@ -84,22 +84,22 @@ if(false) {
 
 /***/ }),
 
-/***/ 498:
+/***/ 502:
 /***/ (function(module, exports, __webpack_require__) {
 
-exports = module.exports = __webpack_require__(25)();
+exports = module.exports = __webpack_require__(18)();
 // imports
 
 
 // module
-exports.push([module.i, "/* You can add global styles to this file, and also import other style files */\nhtml, body {\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-align: center;\n      -ms-flex-align: center;\n          align-items: center;\n  -webkit-box-pack: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  width: 100%;\n  height: 100%;\n    /* Mozilla Firefox */\n    /* Opera */\n    /* Webkit (Safari/Chrome 10) */ \nbackground-image: -webkit-gradient(linear, left bottom, left top, color-stop(0, #2790B0), color-stop(1, #2B4E72));\n    /* Webkit (Chrome 11+) */ \nbackground-image: -webkit-linear-gradient(bottom, #2790B0 0%, #2B4E72 100%);\n    /* W3C Markup, IE10 Release Preview */ \nbackground-image: linear-gradient(to top, #2790B0 0%, #2B4E72 100%);\n\n\n}\n\n.app {\n  width: 100%;\n  height: 100%;\n  min-height: 350px;\n}\n\n.container-fluid, .row {\n  height:100%;\n  padding: 0;\n}\n\n.flex-row, .flex-row > div[class*='col-'] {  \n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-flex: 0;\n      -ms-flex: 0 auto;\n          flex: 0 auto;\n  height:100%;\n}\n\n.flex-col {\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  -webkit-box-orient: vertical;\n  -webkit-box-direction: normal;\n      -ms-flex-flow: column nowrap;\n          flex-flow: column nowrap;\n}\n\n.flex-grow {\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-flex: 2;\n      -ms-flex: 2;\n          flex: 2;\n}\n.card-group {\n  height:100%;\n  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);\n}\n\n.card {\n  border-radius: 0;\n  min-height: 100%;\n  padding:0;\n}\n\n\n.chat {\n  list-style: none;\n  margin: 0;\n  padding: 0;\n}\n\n.card-msg {\n  padding: 0;\n}\n\n.card-block {\n  overflow-y: scroll;\n  -ms-overflow-style: -ms-autohiding-scrollbar;\n}\n\n[placeholder]:empty:before {\n  content: attr(placeholder);\n  color: #555; \n}\n\n[placeholder]:empty:focus:before {\n  content: \"\";\n}\n.fa-sign-out {\n  font-size: 1.5em;\n  margin: 9px;\n}\n.fa-plus-square-o {\n  font-size: 1.5em;\n  vertical-align: bottom;\n}\n\n*::-webkit-scrollbar {\n  width: 6px !important;\n  height: 6px !important;\n}\n\n*::-webkit-scrollbar-thumb {\n  background-color: rgba(0,0,0,0.2);\n}\n\n@media screen and (min-width: 1070px) {\n  .app {\n    max-width: 1000px;\n    margin:0;\n    height: 90vh;\n    margin: auto 5vw;\n  }\n  .card-group{\n    border-radius: 5px;\n  }\n}\n\n@media screen and (max-width: 1070px) {\n  .card-header {\n    border-radius: 0;\n    border: 0;\n}\n}\n\n.card-header {\n  background-color: #95bce1;\n  border: 0;\n      border-radius: 0!important;\n}\n\n.card-footer {\n  background-color: #95bce1;\n  border: 0;\n      border-radius: 0!important;\n}\n\n#loginForm {\n  background-color: white;\n    padding: 60px;\n    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);\n}\n\n@media screen and (max-width: 633px) {\n  #loginForm {\n  background-color: white;\n    padding: 50px 10px;\n  }\n}\n\n.form-control:disabled {\n    cursor: help;\n}\n\n.form-control:disabled, .form-control[readonly] {\n    background-color: #eceeef;\n    opacity: 1;\n}\n\n.card .avatar {\n    width: 45px;\n    height: 45px;\n    border-radius: 50%;\n    display: inline-block;\n    margin-right: 20px;\n}\n\n.btn {\n  padding: 3px;\n  margin: 0!important;\n}\n\n.spinner {\n  width: 60px;\n  height: 60px;\n\n  position: relative;\n  margin: 180px auto;\n}\n\n.double-bounce1, .double-bounce2 {\n  width: 100%;\n  height: 100%;\n  border-radius: 50%;\n  background-color: white;\n  opacity: 0.6;\n  position: absolute;\n  top: 0;\n  left: 0;\n  \n  -webkit-animation: sk-bounce 2.0s infinite ease-in-out;\n  animation: sk-bounce 2.0s infinite ease-in-out;\n}\n\n.double-bounce2 {\n  -webkit-animation-delay: -1.0s;\n  animation-delay: -1.0s;\n}\n\n@-webkit-keyframes sk-bounce {\n  0%, 100% { -webkit-transform: scale(0.0) }\n  50% { -webkit-transform: scale(1.0) }\n}\n\n@keyframes sk-bounce {\n  0%, 100% { \n    transform: scale(0.0);\n    -webkit-transform: scale(0.0);\n  } 50% { \n    transform: scale(1.0);\n    -webkit-transform: scale(1.0);\n  }\n}", ""]);
+exports.push([module.i, "/* You can add global styles to this file, and also import other style files */\nhtml, body {\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-align: center;\n      -ms-flex-align: center;\n          align-items: center;\n  -webkit-box-pack: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  width: 100%;\n  height: 100%;\n    /* Mozilla Firefox */\n    /* Opera */\n    /* Webkit (Safari/Chrome 10) */ \nbackground-image: -webkit-gradient(linear, left bottom, left top, color-stop(0, #4E648E), color-stop(1, #152B55));\n    /* Webkit (Chrome 11+) */ \nbackground-image: -webkit-linear-gradient(bottom, #4E648E 0%, #152B55 100%);\n    /* W3C Markup, IE10 Release Preview */ \nbackground-image: linear-gradient(to top, #4E648E 0%, #152B55 100%);\n\n\n}\n\n.app {\n  width: 100%;\n  height: 100%;\n  min-height: 350px;\n}\n\n.container-fluid, .row {\n  height:100%;\n  padding: 0;\n}\n\n.flex-row, .flex-row > div[class*='col-'] {  \n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-flex: 0;\n      -ms-flex: 0 auto;\n          flex: 0 auto;\n  height:100%;\n}\n\n.flex-col {\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-flex: 1;\n      -ms-flex: 1;\n          flex: 1;\n  -webkit-box-orient: vertical;\n  -webkit-box-direction: normal;\n      -ms-flex-flow: column nowrap;\n          flex-flow: column nowrap;\n}\n\n.flex-grow {\n  display: -webkit-box;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-flex: 2;\n      -ms-flex: 2;\n          flex: 2;\n}\n.card-group {\n  height:100%;\n  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);\n}\n\n.card {\n  border-radius: 0;\n  min-height: 100%;\n  padding:0;\n  border: 0;\n}\n\n\n.chat {\n  list-style: none;\n  margin: 0;\n  padding: 0;\n}\n\n.card-msg {\n  padding: 0;\n  background-color: #FCF6FD;\n}\n\n.card-block {\n  overflow-y: scroll;\n  -ms-overflow-style: -ms-autohiding-scrollbar;\n  overflow-x:hidden;\n}\n\n[placeholder]:empty:before {\n  content: attr(placeholder);\n  color: #555; \n}\n\n[placeholder]:empty:focus:before {\n  content: \"\";\n}\n.fa-sign-out {\n  font-size: 1.5em;\n  margin-top: 12px;\n}\n.fa-plus-square-o {\n  font-size: 1.5em;\n  vertical-align: bottom;\n}\n\n*::-webkit-scrollbar {\n  width: 6px !important;\n  height: 6px !important;\n}\n\n*::-webkit-scrollbar-thumb {\n  background-color: rgba(0,0,0,0.2);\n}\n\n@media screen and (min-width: 1070px) {\n  .app {\n    max-width: 1000px;\n    margin:0;\n    height: 90vh;\n    margin: auto 5vw;\n  }\n  .card-group{\n    border-radius: 5px;\n  }\n}\n\n@media screen and (max-width: 1070px) {\n  .card-header {\n    border-radius: 0;\n    border: 0;\n}\n}\n\n.card-header {\n  background-color: #2E4372;\n  border: 0;\n  border-radius: 0!important;\n  color: whitesmoke;\n}\n\n.card-footer {\n  background-color: #2E4372;\n  border: 0;\n  border-radius: 0!important;\n  color: whitesmoke;\n}\n\n#loginForm {\n  background-color: white;\n    padding: 60px;\n    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);\n}\n\n@media screen and (max-width: 633px) {\n  #loginForm {\n  background-color: white;\n    padding: 50px 10px;\n  }\n}\n\n.form-control:disabled {\n    cursor: help;\n}\n\n.form-control:disabled, .form-control[readonly] {\n    background-color: #eceeef;\n    opacity: 1;\n}\n\n.card .avatar {\n    width: 45px;\n    height: 45px;\n    border-radius: 50%;\n    display: inline-block;\n    margin-right: 20px;\n}\n\n.btn {\n  padding: 3px;\n  margin: 0!important;\n}\n\n.spinner {\n  width: 60px;\n  height: 60px;\n\n  position: relative;\n  margin: 180px auto;\n}\n\n.double-bounce1, .double-bounce2 {\n  width: 100%;\n  height: 100%;\n  border-radius: 50%;\n  background-color: white;\n  opacity: 0.6;\n  position: absolute;\n  top: 0;\n  left: 0;\n  \n  -webkit-animation: sk-bounce 2.0s infinite ease-in-out;\n  animation: sk-bounce 2.0s infinite ease-in-out;\n}\n\n.double-bounce2 {\n  -webkit-animation-delay: -1.0s;\n  animation-delay: -1.0s;\n}\n\n@-webkit-keyframes sk-bounce {\n  0%, 100% { -webkit-transform: scale(0.0) }\n  50% { -webkit-transform: scale(1.0) }\n}\n\n@keyframes sk-bounce {\n  0%, 100% { \n    transform: scale(0.0);\n    -webkit-transform: scale(0.0);\n  } 50% { \n    transform: scale(1.0);\n    -webkit-transform: scale(1.0);\n  }\n}", ""]);
 
 // exports
 
 
 /***/ }),
 
-/***/ 544:
+/***/ 551:
 /***/ (function(module, exports) {
 
 /*
@@ -352,13 +352,13 @@ function updateLink(linkElement, obj) {
 
 /***/ }),
 
-/***/ 552:
+/***/ 559:
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(324);
+module.exports = __webpack_require__(325);
 
 
 /***/ })
 
-},[552]);
+},[559]);
 //# sourceMappingURL=styles.bundle.js.map

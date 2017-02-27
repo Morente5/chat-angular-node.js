@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, ElementRef, ViewChild, OnInit } from '@angular/core';
 
 import { ChannelsService } from './../../../services/channels.service';
 
@@ -11,7 +11,7 @@ import { Message } from './../../../model/message';
   styleUrls: ['./chat-input.component.css']
 })
 export class ChatInputComponent implements OnInit {
-
+  @ViewChild('fileInput') fileInput: ElementRef;
   selectedChannel: Channel;
   messageText: string;
   typeInterval = 0;

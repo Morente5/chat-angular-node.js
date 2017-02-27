@@ -5,7 +5,11 @@
     [ngClass]="isSelected(chn) ? 'active' : ''"
     (click)="enterChannel(chn)"
   >
-    <img [src]="'assets/avatars/'+ chn.avatar || chn.user.avatar" class="img-fluid avatar"/>
-    {{chn.showname}}
+      <img [src]="'assets/avatars/'+ chn.avatar || chn.user.avatar" class="img-fluid avatar"/>
+      <div class="flex-column userdata">
+        <div class="username">{{chn.showname}}</div>
+        <div class="userstatus"><small>{{chn.description || chn.user.status}}</small></div>
+      </div>
+
   </li>
 </ul>

@@ -15,7 +15,7 @@ export class ChannelsService {
   subjectMessages: BehaviorSubject<any> = new BehaviorSubject<any>(this.messages);
   channels: Array<Channel>;
   selectedChannel: Channel;
-  subjectSelectedChannel: BehaviorSubject<any> = new BehaviorSubject<any>(new Channel(null, null, null));
+  subjectSelectedChannel: BehaviorSubject<any> = new BehaviorSubject<any>(new Channel(null, '', null, null));
   constructor(
     private socketService: SocketService
   ) {
@@ -42,7 +42,7 @@ export class ChannelsService {
   }
 
   enterChannel(channel: Channel) {
-    this.subjectSelectedChannel.next(new Channel(channel.priv, channel.id, channel.user, channel.avatar));
+    this.subjectSelectedChannel.next(new Channel(channel.priv, channel.description, channel.id, channel.user, channel.avatar));
   }
 
   sendMsg(messageText) {

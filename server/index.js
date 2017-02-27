@@ -18,21 +18,24 @@ var express = require('express'),
     app = express(),
     server = require('http').Server(app),
     io = require('socket.io')(server),
+    ss = require('socket.io-stream'),
+    path = require('path');
     dl = require("delivery"),
-    fl = require("fs");
+    fs = require("fs");
 
 app.use(express.static('public/dist'));
 
 var connectedUsers = [],
-    channels = [{ id: 'general', priv: false, avatar: '' },
-    { id: 'homework', priv: false, avatar: '' },
-    { id: 'offtopic', priv: false, avatar: '' }
+    channels = [{ id: 'general', priv: false, description: 'General chat', avatar: '' },
+    { id: 'homework', priv: false, description: 'Here you can talk about your homework', avatar: '' },
+    { id: 'offtopic', priv: false, description: 'Talk about anything here', avatar: '' }
     ];
 
 
 io.on('connection', function (socket) {
 
-    var delivery = dl.listen(socket);
+    let delivery = dl.listen(socket);
+    let socketStream = ss(socket);
 
     socket.user = { name: '', avatar: '', status: '' };
     socket.emit('load', channels, connectedUsers);
@@ -45,13 +48,13 @@ io.on('connection', function (socket) {
         connectedUsers.push(user);
         socket.emit('logged-in', user);
         console.log(user.name, 'logged in');
-        console.log('connected users', connectedUsers.map(function (a) { return a.name; }));
+        //console.log('connected users', connectedUsers.map(function (a) { return a.name; }));
 
         io.sockets.emit('load', channels, connectedUsers);
     });
 
     socket.on('sendMessage', function (message) {
-        console.log(message.channel.priv);
+        // console.log(message.channel.priv);
         if (message.channel.priv) { //he añadido '.channel'
             io.sockets.in(message.channel.id).emit('message', message);
             socket.emit('message', message);
@@ -63,13 +66,15 @@ io.on('connection', function (socket) {
 
     socket.on('logout', function () {
         disconnect(socket.user);
-        console.log('connected users', connectedUsers.map(function (a) { return a.name; }));
+        //console.log('connected users', connectedUsers.map(function (a) { return a.name; }));
         io.sockets.emit('load', channels, connectedUsers);
+        console.log(socket.user.name, 'logged out');
     });
     socket.on('disconnect', function () {
         disconnect(socket.user);
-        console.log('connected users', connectedUsers.map(function (a) { return a.name; }));
-        io.sockets.emit('load', channels, connectedUsers);  // All people see all messages?
+        //console.log('connected users', connectedUsers.map(function (a) { return a.name; }));
+        io.sockets.emit('load', channels, connectedUsers);
+        console.log(socket.user.name, 'logged out');
     });
 
     socket.on('sendTyping', function (user, channel) {
@@ -91,6 +96,11 @@ io.on('connection', function (socket) {
         }
     });
 
+    socket.on('video', function (image) {
+        socket.broadcast.emit('stop-typing', user, channel);
+    });
+
+
     delivery.on('receive.success', function (file) {
         var params = file.params;
         console.log(params);
@@ -105,16 +115,21 @@ io.on('connection', function (socket) {
 
     delivery.on('delivery.connect', function (delivery) {
 
-        delivery.send({
+        /*delivery.send({
             name: 'sample-image.jpg',
             path: './sample-image.jpg',
             params: { foo: 'bar' }
-        });
+        });*/
 
         delivery.on('send.success', function (file) {
             console.log('File successfully sent to client!');
         });
 
+    });
+
+    socketStream.on('profile-image', function(stream, data) {
+        let filename = path.basename(data.name);
+        stream.pipe(fs.createWriteStream(filename));
     });
 
 });

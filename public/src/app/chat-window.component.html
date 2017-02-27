@@ -8,6 +8,7 @@
 
 		<div class="card col-md-8 flex-col">
 			<chat-status></chat-status>
+			<chat-video></chat-video>
 			<chat-messages id="scroll" class="card-block card-msg flex-grow"></chat-messages>
 			<chat-input class="card-footer"></chat-input>
 		</div>
@@ -15,6 +16,6 @@
 	</div>
 </div>
 
-<div class="container" *ngIf="!loggedIn">
+<div class="container" *ngIf="!loggedIn && ready">
 	<login></login>
 </div>

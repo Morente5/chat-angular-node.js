@@ -4,8 +4,9 @@ import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 
 import * as io from 'socket.io-client';
 //import { Delivery } from 'delivery';
-import 'jquery';
+//import 'jquery';
 declare var $;
+declare var Delivery;
 
 import { User } from '../model/user';
 import { Channel } from '../model/channel';
@@ -14,6 +15,7 @@ import { Message } from '../model/message';
 @Injectable()
 export class SocketService {
   socket: SocketIOClient.Socket;
+  delivery;
 
   channels: Array<Channel>;
   users: Array<User>;
@@ -26,6 +28,7 @@ export class SocketService {
 
   subjectCurrentUser: BehaviorSubject<User> = new BehaviorSubject<User>(new User(''));
   subjectLoggedIn: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
+  subjectReady: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
 
   subjectMessage: BehaviorSubject<any> = new BehaviorSubject<any>('');
   constructor() {
@@ -36,22 +39,24 @@ export class SocketService {
     this.subjectLoggedIn.subscribe(log => this.loggedIn = log);
 
     this.socket = io();
-    //this.delivery = new Delivery(this.socket);
+      this.delivery = new Delivery(this.socket);
 
     this.socket.on('load', (channels, users) => {
-      const tempPublicChannels = channels.map(channel => new Channel(channel.priv, channel.id, new User(''), 'chat.png'));
+      const tempPublicChannels = channels
+        .map(channel => new Channel(channel.priv, channel.description, channel.id, new User(''), 'chat.png'));
       const tempUsers = users.map(user => new User(user.name, user.avatar, user.status, user.id));
 
       if (this.loggedIn) {
         let tempPrivateChannels: Array<Channel> = [];
         users.forEach(user => {
           if (user.name !== this.loggedUser.name) {
-            tempPrivateChannels.push(new Channel(true, user.name, user, user.avatar));
+            tempPrivateChannels.push(new Channel(true, user.status, user.name, user, user.avatar));
           }
         });
 
         this.subjectUsers.next(tempUsers);
         this.subjectChannels.next(tempPublicChannels.concat(tempPrivateChannels));
+        this.subjectReady.next(true);
       }
     });
     this.socket.on('logged-in', user => {
@@ -82,11 +87,11 @@ export class SocketService {
       console.log('stoptyping', user, this.channels.find(chn => chnID === chn.id));
     });
 
-    /*this.delivery.on('delivery.connect', delivery => {
+    this.delivery.on('delivery.connect', delivery => {
       $('input[type=submit]').click(function(evt){
         let file = $('input[type=file]')[0].files[0];
-        let extraParams = {foo: 'bar'};
-        delivery.send(file, extraParams);
+        //let extraParams = {foo: 'bar'};
+        delivery.send(file/*, extraParams*/);
         evt.preventDefault();
       });
     });
@@ -105,7 +110,7 @@ export class SocketService {
         $('img').attr('src', file.dataURL());
       };
     });
-*/
+
   }
 
   login(user: User) {

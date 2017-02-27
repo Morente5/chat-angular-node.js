@@ -1,0 +1,16 @@
+#currentUser .userdata{
+  max-width: calc(100% - 120px);
+  display: inline-block;
+}
+
+#currentUser .username, #currentUser .userstatus{
+
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    
+    overflow: hidden;
+}
+
+#currentUser .avatar {
+  vertical-align: initial;
+}

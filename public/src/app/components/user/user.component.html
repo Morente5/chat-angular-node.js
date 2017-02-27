@@ -1,5 +1,8 @@
-<div id="userGrad">
+<div id="currentUser">
   <img [src]="'assets/avatars/'+ user.avatar" class="img-fluid avatar"/>
-  <span>{{user.name}}</span>
+  <div class="flex-column userdata">
+        <div class="username">{{user.name}}</div>
+        <div class="userstatus"><small>{{user.status}}</small></div>
+  </div>
   <i class="fa pull-right fa-sign-out" aria-hidden="true" (click)="logout()"></i>
 </div>

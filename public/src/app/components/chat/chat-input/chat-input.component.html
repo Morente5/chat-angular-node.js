@@ -16,8 +16,9 @@
     />
     </span>
     <span class="input-group-btn">
-    <label class="btn btn-info btn-file btn-sm" id="btn-chat-upload" (click)='uploadFile()' [ngClass]="{disabled: !selectedChannel.id}">
-      <i class="fa fa-upload" aria-hidden="true"></i><input type="file" style="display: none;" [disabled]="!selectedChannel.id">
+    <label class="btn btn-info btn-file btn-sm" id="btn-chat-upload" [ngClass]="{disabled: !selectedChannel.id}"><!--(click)='uploadFile()'-->
+      <i class="fa fa-upload" aria-hidden="true"></i><input type="file" style="display: none;" #fileInput [disabled]="!selectedChannel.id" (change)="upload(file.files)">
     </label>
+    <span *ngIf="Property" ></span>
   </span>
 </div>

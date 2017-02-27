@@ -2,8 +2,34 @@
   width: 100%;
   height: 100%;
   overflow-y: auto;
+  overflow-x: hidden;
+  background-color: #f9fef6;
 }
 
 .list-group-flush .list-group-item {
   flex-shrink: 0;
+  border-radius: 0;
+  border-bottom: 1px solid #B3E095;
+}
+.list-group-item {
+  background-color: #fdfefc;
+  border: 1px solid #B3E095;
+  border-left: 0;
+  border-right: 0;
+}
+
+.list-group-item.active {
+    color: whitesmoke;
+    background-color: #B3E095;
+    border-color: #B3E095;
+}
+
+.list-group-item .username, .list-group-item .userstatus {
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.list-group-item .userdata {
+  max-width: calc(100% - 85px);
 }
