@@ -21,7 +21,7 @@
       "styles": [
         "styles.css"
       ],
-      "scripts": ["app/utils/delivery.js", "app/utils/jquery.min.js"],
+      "scripts": ["../node_modules/delivery/lib/client/delivery.js", "../node_modules/jquery/dist/jquery.min.js", "../node_modules/webrtc-adapter/out/adapter.js"],
       "environmentSource": "environments/environment.ts",
       "environments": {
         "dev": "environments/environment.ts",

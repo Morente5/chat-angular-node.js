@@ -2,3 +2,18 @@
     font-size: 1.5em;
     padding: 3px;
 }
+.fa-video-camera {
+    font-size: 1.5em;
+    padding: 3px;
+}
+
+.btn {
+    width: 40px;
+    height: 40px;
+    margin-left: 5px!important;
+    border-radius: 0;
+}
+
+#btn-input {
+    border-radius: 0;
+}

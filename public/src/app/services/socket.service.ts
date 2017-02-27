@@ -3,8 +3,7 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 
 import * as io from 'socket.io-client';
-//import { Delivery } from 'delivery';
-//import 'jquery';
+
 declare var $;
 declare var Delivery;
 
@@ -21,10 +20,13 @@ export class SocketService {
   users: Array<User>;
   loggedUser: User;
   loggedIn: boolean;
+  ready: boolean;
 
   subjectChannels: BehaviorSubject<Array<Channel>> = new BehaviorSubject<Array<Channel>>([]);
   subjectTyping: BehaviorSubject<Array<Channel>> = new BehaviorSubject<Array<Channel>>([]);
   subjectUsers: BehaviorSubject<Array<User>> = new BehaviorSubject<Array<User>>([]);
+  subjectVideo: BehaviorSubject<Array<any>> = new BehaviorSubject<Array<any>>([]);
+
 
   subjectCurrentUser: BehaviorSubject<User> = new BehaviorSubject<User>(new User(''));
   subjectLoggedIn: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
@@ -37,9 +39,10 @@ export class SocketService {
     this.subjectUsers.subscribe(users => this.users = users);
     this.subjectCurrentUser.subscribe(usr => this.loggedUser = usr);
     this.subjectLoggedIn.subscribe(log => this.loggedIn = log);
+    this.subjectReady.subscribe(ready => this.ready = ready);
 
     this.socket = io();
-      this.delivery = new Delivery(this.socket);
+    this.delivery = new Delivery(this.socket);
 
     this.socket.on('load', (channels, users) => {
       const tempPublicChannels = channels
@@ -56,9 +59,9 @@ export class SocketService {
 
         this.subjectUsers.next(tempUsers);
         this.subjectChannels.next(tempPublicChannels.concat(tempPrivateChannels));
-        this.subjectReady.next(true);
       }
     });
+
     this.socket.on('logged-in', user => {
       const tempUser = new User(user.name, user.avatar, user.status, user.id);
       this.subjectCurrentUser.next(tempUser);
@@ -74,7 +77,7 @@ export class SocketService {
       const chnID = channel.priv ? user.id : channel.id;
       this.channels[this.channels.findIndex(
         chn => chnID === chn.id)].typing.push(new User(user.name, user.avatar, user.status, user.id));
-      console.log(this.channels[this.channels.findIndex( chn => chnID === chn.id)]);
+      console.log(this.channels[this.channels.findIndex(chn => chnID === chn.id)]);
       this.subjectTyping.next(this.channels);
     });
 
@@ -88,29 +91,44 @@ export class SocketService {
     });
 
     this.delivery.on('delivery.connect', delivery => {
-      $('input[type=submit]').click(function(evt){
+      $('input[type=submit]').click(function (evt) {
         let file = $('input[type=file]')[0].files[0];
         //let extraParams = {foo: 'bar'};
         delivery.send(file/*, extraParams*/);
         evt.preventDefault();
       });
     });
- 
-    this.delivery.on('send.success',function(fileUID){
+
+    this.delivery.on('send.success', function (fileUID) {
       console.log('file was successfully sent.');
     });
 
-    this.delivery.on('receive.start',function(fileUID){
+    this.delivery.on('receive.start', function (fileUID) {
       console.log('receiving a file!');
     });
- 
-    this.delivery.on('receive.success',function(file){
+
+    this.delivery.on('receive.success', function (file) {
       let params = file.params;
       if (file.isImage()) {
         $('img').attr('src', file.dataURL());
       };
     });
 
+    this.socket.on('video', (image, user, channel) => {
+      if (this.loggedIn && this.loggedUser.id && this.ready) {
+        const chnID = channel.priv ? user.id : channel.id;
+        this.channels[this.channels.findIndex(
+          chn => chnID === chn.id)].video[user.id] = image;
+        this.subjectVideo.next(this.channels);
+      }
+    });
+    this.socket.on('stvideo', user => {
+      this.channels.forEach(channel => {
+        delete channel.video[user.id];
+      });
+    });
+
+    window.setTimeout( () => this.subjectReady.next(true), 1000);
   }
 
   login(user: User) {
@@ -132,5 +150,12 @@ export class SocketService {
   }
   stopTyping(channel: Channel) {
     this.socket.emit('sendStopTyping', this.loggedUser, channel);
+  }
+
+  sendVideo(image, channel: Channel) {
+    this.socket.emit('sendVideo', image, this.loggedUser, channel);
+  }
+  stopVideo() {
+    this.socket.emit('stopVideo', this.loggedUser);
   }
 }

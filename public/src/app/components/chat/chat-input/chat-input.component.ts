@@ -1,6 +1,7 @@
 import { Component, ElementRef, ViewChild, OnInit } from '@angular/core';
 
 import { ChannelsService } from './../../../services/channels.service';
+import { ChatVideoComponent } from './../chat-video/chat-video.component';
 
 import { Channel } from './../../../model/channel';
 import { Message } from './../../../model/message';
@@ -15,6 +16,7 @@ export class ChatInputComponent implements OnInit {
   selectedChannel: Channel;
   messageText: string;
   typeInterval = 0;
+  videoActive: boolean = false;
   constructor(
     private channelsService: ChannelsService
   ) {
@@ -25,6 +27,10 @@ export class ChatInputComponent implements OnInit {
         this.typeInterval = 0;
         this.channelsService.stopTyping();
       }
+    });
+
+    this.channelsService.subjectVideo.subscribe(value => {
+      this.videoActive = value;
     });
 
   }
@@ -65,7 +71,14 @@ export class ChatInputComponent implements OnInit {
     } else {
       this.channelsService.stopTyping();
     }
+  }
 
+  startVideo() {
+    this.channelsService.subjectVideo.next(true);
+  }
+
+  stopVideo() {
+    this.channelsService.subjectVideo.next(false);
   }
 
 

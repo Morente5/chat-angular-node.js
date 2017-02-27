@@ -20,7 +20,7 @@ var express = require('express'),
     io = require('socket.io')(server),
     ss = require('socket.io-stream'),
     path = require('path');
-    dl = require("delivery"),
+dl = require("delivery"),
     fs = require("fs");
 
 app.use(express.static('public/dist'));
@@ -65,12 +65,14 @@ io.on('connection', function (socket) {
     });
 
     socket.on('logout', function () {
+        socket.broadcast.emit('stvideo', socket.user);
         disconnect(socket.user);
         //console.log('connected users', connectedUsers.map(function (a) { return a.name; }));
         io.sockets.emit('load', channels, connectedUsers);
         console.log(socket.user.name, 'logged out');
     });
     socket.on('disconnect', function () {
+        socket.broadcast.emit('stvideo', socket.user);
         disconnect(socket.user);
         //console.log('connected users', connectedUsers.map(function (a) { return a.name; }));
         io.sockets.emit('load', channels, connectedUsers);
@@ -96,8 +98,18 @@ io.on('connection', function (socket) {
         }
     });
 
-    socket.on('video', function (image) {
-        socket.broadcast.emit('stop-typing', user, channel);
+    socket.on('sendVideo', function (image, user, channel) {
+        if (channel) {
+            if (channel.priv) {
+                io.sockets.in(channel.id).emit('video', image, user, channel);
+            } else {
+                socket.broadcast.emit('video', image, user, channel);
+            }
+        }
+    });
+
+    socket.on('stopVideo', function (user) {
+        socket.broadcast.emit('stvideo', user);
     });
 
 
@@ -127,7 +139,7 @@ io.on('connection', function (socket) {
 
     });
 
-    socketStream.on('profile-image', function(stream, data) {
+    socketStream.on('profile-image', function (stream, data) {
         let filename = path.basename(data.name);
         stream.pipe(fs.createWriteStream(filename));
     });

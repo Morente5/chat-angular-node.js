@@ -33,8 +33,10 @@ export class LoginService {
   };
 
   login(user: User) {
-    this.ls.set('user', user);
-    this.socketService.login(user);
+    if (!this.chosen(user, this.users)) {
+      this.ls.set('user', user);
+      this.socketService.login(user);
+    }
   }
 
 
@@ -58,7 +60,7 @@ export class LoginService {
 
   // Name chosen
   chosen(testUser: User, users: Array<User>) {
-    return users.find(user => user.name === testUser.name);
+    return users.findIndex(usr => usr.name === testUser.name) !== -1;
   }
 
 }

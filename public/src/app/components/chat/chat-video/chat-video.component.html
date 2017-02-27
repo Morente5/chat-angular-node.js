@@ -1,7 +1,11 @@
-<div>
-  <video #video id="video" width="20%" height="20%" src="{{videosrc}}" controls>
-
-
+<div class="abs-container">
+  <div *ngIf="videoImgs && videoImgs[selectedChannel.id] && channelsID().length !== 0">
+    <div class="videoUser" *ngFor="let item of channelsID()">
+      <img class="videoImg" src="{{videoImgs[selectedChannel.id][item]}}" alt="">
+      <img [src]="'assets/avatars/'+ searchChannel(item).avatar || searchChannel(item).user.avatar" class="img-fluid avatar"/>
+    </div>
+  </div>
+  <canvas #canvas id="canvas" style="display:none;"></canvas>
+  <video #video id="video" width="20%" height="20%" src="{{videosrc}}" autoplay class="pull-right">
   </video>
-  <canvas #canvas id="view"></canvas>
 </div>

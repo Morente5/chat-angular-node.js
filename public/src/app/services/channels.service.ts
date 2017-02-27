@@ -16,6 +16,7 @@ export class ChannelsService {
   channels: Array<Channel>;
   selectedChannel: Channel;
   subjectSelectedChannel: BehaviorSubject<any> = new BehaviorSubject<any>(new Channel(null, '', null, null));
+  subjectVideo: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
   constructor(
     private socketService: SocketService
   ) {
@@ -28,8 +29,8 @@ export class ChannelsService {
           this.messages[chnID] = [];
         }
         message.first = !this.messages.hasOwnProperty(chnID) ||
-                        this.messages[chnID].length === 0 ||
-                        message.author.name !== this.messages[chnID].slice(-1).pop().author.name;
+          this.messages[chnID].length === 0 ||
+          message.author.name !== this.messages[chnID].slice(-1).pop().author.name;
         this.messages[chnID].push(message);
         this.subjectMessages.next(this.messages);
       }
@@ -46,14 +47,22 @@ export class ChannelsService {
   }
 
   sendMsg(messageText) {
-    let chnID = this.selectedChannel.id;
-    let userName = this.loggedUser.name;
-    let newMessage = new Message(
+    const chnID = this.selectedChannel.id;
+    const userName = this.loggedUser.name;
+    const newMessage = new Message(
       this.loggedUser,
       this.selectedChannel,
       messageText
     );
     this.socketService.sendMsg(newMessage);
+  }
+
+  sendVideo(image) {
+    this.socketService.sendVideo(image, this.selectedChannel);
+  }
+
+  stopVideo() {
+    this.socketService.stopVideo();
   }
 
   typing() {

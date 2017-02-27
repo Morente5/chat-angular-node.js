@@ -225,3 +225,7 @@ background-image: linear-gradient(to top, #4E648E 0%, #152B55 100%);
     -webkit-transform: scale(1.0);
   }
 }
+
+chat-video {
+  position: relative;
+}
