@@ -70,19 +70,7 @@ var SocketService = (function () {
         this.socket = __WEBPACK_IMPORTED_MODULE_2_socket_io_client__();
         this.delivery = new Delivery(this.socket);
         this.socket.on('load', function (channels, users) {
-            var tempPublicChannels = channels
-                .map(function (channel) { return new __WEBPACK_IMPORTED_MODULE_4__model_channel__["a" /* Channel */](channel.priv, channel.description, channel.id, new __WEBPACK_IMPORTED_MODULE_3__model_user__["a" /* User */](''), 'chat.png'); });
-            var tempUsers = users.map(function (user) { return new __WEBPACK_IMPORTED_MODULE_3__model_user__["a" /* User */](user.name, user.avatar, user.status, user.id); });
-            if (_this.loggedIn) {
-                var tempPrivateChannels_1 = [];
-                users.forEach(function (user) {
-                    if (user.name !== _this.loggedUser.name) {
-                        tempPrivateChannels_1.push(new __WEBPACK_IMPORTED_MODULE_4__model_channel__["a" /* Channel */](true, user.status, user.name, user, user.avatar));
-                    }
-                });
-                _this.subjectUsers.next(tempUsers);
-                _this.subjectChannels.next(tempPublicChannels.concat(tempPrivateChannels_1));
-            }
+            _this.load(channels, users);
         });
         this.socket.on('logged-in', function (user) {
             var tempUser = new __WEBPACK_IMPORTED_MODULE_3__model_user__["a" /* User */](user.name, user.avatar, user.status, user.id);
@@ -105,26 +93,11 @@ var SocketService = (function () {
             _this.channels[i].typing.splice(j, 1);
             _this.subjectTyping.next(_this.channels);
         });
-        this.delivery.on('delivery.connect', function (delivery) {
-            $('input[type=submit]').click(function (evt) {
-                var file = $('input[type=file]')[0].files[0];
-                //let extraParams = {foo: 'bar'};
-                delivery.send(file /*, extraParams*/);
-                evt.preventDefault();
-            });
-        });
         this.delivery.on('send.success', function (fileUID) {
             console.log('file was successfully sent.');
         });
         this.delivery.on('receive.start', function (fileUID) {
             console.log('receiving a file!');
-        });
-        this.delivery.on('receive.success', function (file) {
-            var params = file.params;
-            if (file.isImage()) {
-                $('img').attr('src', file.dataURL());
-            }
-            ;
         });
         this.socket.on('video', function (image, user, channel) {
             if (_this.loggedIn && _this.loggedUser.id && _this.ready) {
@@ -144,8 +117,44 @@ var SocketService = (function () {
         this.socket.on('userloggedout', function (user) {
             _this.subjectUserNotif.next(user.name + ' logged out');
         });
+        this.socket.on('loadAv', function (user, path) {
+            _this.users.find(function (usr) { return usr.id === user.id; }).avatar = path;
+            _this.subjectUsers.next(_this.users);
+            console.log(_this.users);
+        });
+        this.subjectUsers.subscribe(function (users) {
+            if (_this.loggedIn && _this.loggedUser.id && _this.ready && _this.channels.length !== 0 && _this.users.length !== 0) {
+                _this.channels.forEach(function (channel) {
+                    var user = _this.users.find(function (usr) { return usr.id === channel.id; });
+                    if (user) {
+                        _this.channels.find(function (chn) { return chn.id === user.id; }).avatar = user.avatar;
+                    }
+                });
+                _this.subjectChannels.next(_this.channels);
+                _this.loggedUser.avatar = _this.users.find(function (user) { return user.id === _this.loggedUser.id; }).avatar;
+                _this.subjectCurrentUser.next(_this.loggedUser);
+            }
+        });
         window.setTimeout(function () { return _this.subjectReady.next(true); }, 800);
     }
+    SocketService.prototype.load = function (channels, users) {
+        var _this = this;
+        if (channels === void 0) { channels = this.channels; }
+        if (users === void 0) { users = this.users; }
+        var tempPublicChannels = channels
+            .map(function (channel) { return new __WEBPACK_IMPORTED_MODULE_4__model_channel__["a" /* Channel */](channel.priv, channel.description, channel.id, new __WEBPACK_IMPORTED_MODULE_3__model_user__["a" /* User */](''), '/assets/avatars/chat.png'); });
+        var tempUsers = users.map(function (user) { return new __WEBPACK_IMPORTED_MODULE_3__model_user__["a" /* User */](user.name, user.avatar, user.status, user.id); });
+        if (this.loggedIn) {
+            var tempPrivateChannels_1 = [];
+            users.forEach(function (user) {
+                if (user.name !== _this.loggedUser.name) {
+                    tempPrivateChannels_1.push(new __WEBPACK_IMPORTED_MODULE_4__model_channel__["a" /* Channel */](true, user.status, user.name, user, user.avatar));
+                }
+            });
+            this.subjectUsers.next(tempUsers);
+            this.subjectChannels.next(tempPublicChannels.concat(tempPrivateChannels_1));
+        }
+    };
     SocketService.prototype.login = function (user) {
         this.socket.emit('login', user);
     };
@@ -171,6 +180,10 @@ var SocketService = (function () {
     };
     SocketService.prototype.sendFile = function (file, channel) {
         this.delivery.send(file, { user: this.loggedUser, channel: channel, type: 'message' });
+    };
+    SocketService.prototype.sendAvatar = function (file) {
+        console.log(file);
+        this.delivery.send(file, { user: this.loggedUser, type: 'avatar' });
     };
     SocketService = __decorate([
         __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["Injectable"])(), 
@@ -576,7 +589,6 @@ var ChatInputComponent = (function () {
     };
     ChatInputComponent.prototype.uploadFile = function (event) {
         this.channelsService.sendFile(event.target.files[0]);
-        console.log(event);
     };
     ChatInputComponent.prototype.typing = function (event) {
         var _this = this;
@@ -886,18 +898,18 @@ var LoginComponent = (function () {
         var _this = this;
         this.loginService = loginService;
         this.socketService = socketService;
-        this.avatarImages = ['man.png',
-            'boy.png',
-            'girl.png',
-            'man-2.png',
-            'man-3.png'];
+        this.avatarImages = ['/assets/avatars/man.png',
+            '/assets/avatars/boy.png',
+            '/assets/avatars/girl.png',
+            '/assets/avatars/man-2.png',
+            '/assets/avatars/man-3.png'];
         this.socketService.subjectUsers.subscribe(function (users) { return _this.users = users; });
     }
     LoginComponent.prototype.ngOnInit = function () {
     };
     LoginComponent.prototype.loginBtn = function () {
         if (this.inputUsername && this.inputUsername.trim()) {
-            this.loginService.login(new __WEBPACK_IMPORTED_MODULE_3__model_user__["a" /* User */](this.inputUsername.trim().replace(/[\W_]+/g, '-'), this.selectedAvatar || 'man-3.png', this.inputStatus));
+            this.loginService.login(new __WEBPACK_IMPORTED_MODULE_3__model_user__["a" /* User */](this.inputUsername.trim().replace(/[\W_]+/g, '-'), this.selectedAvatar || '/assets/avatars/man-3.png', this.inputStatus));
         }
     };
     LoginComponent.prototype.available = function () {
@@ -961,6 +973,9 @@ var UserComponent = (function () {
     };
     UserComponent.prototype.logout = function () {
         this.loginService.logout();
+    };
+    UserComponent.prototype.uploadAvatar = function (event) {
+        this.socketService.sendAvatar(event.target.files[0]);
     };
     UserComponent = __decorate([
         __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["Component"])({
@@ -1073,7 +1088,7 @@ exports = module.exports = __webpack_require__(18)();
 
 
 // module
-exports.push([module.i, ".card-group {\r\n  height:100%;\r\n}\r\n\r\n.card {\r\n  border-radius: 0;\r\n  min-height: 100%;\r\n  padding:0;\r\n}\r\n\r\n\r\n.chat {\r\n  list-style: none;\r\n  margin: 0;\r\n  padding: 0;\r\n}\r\n\r\n.card-msg {\r\n  padding: 0;\r\n}\r\n\r\n.card-block {\r\n  overflow-y: scroll;\r\n  -ms-overflow-style: -ms-autohiding-scrollbar;\r\n}\r\n\r\n\r\n.messages {\r\n  position: relative;\r\n  list-style: none;\r\n  padding: 20px;\r\n  margin: 0;\r\n  height: 100%;\r\n  width: 100%;\r\n}\r\n\r\n.messages .message {\r\n  clear: both;\r\n  overflow: hidden;\r\n  margin-bottom: 10px;\r\n  -webkit-transition:all 0.5s linear;\r\n  transition: all 0.5s linear;\r\n}\r\n.messages .message.left .avatar {\r\n  background-color: #7FD7F7;\r\n  float: left;\r\n}\r\n.messages .message.left .text_wrapper {\r\n  background-color: #BFEBFB;\r\n  margin-left: 20px;\r\n}\r\n.messages .message.left .text_wrapper::after, .messages .message.left .text_wrapper::before {\r\n  right: 100%;\r\n  border-right-color: #BFEBFB;\r\n}\r\n.messages .message.left .text {\r\n  color: #333;\r\n}\r\n.messages .message.right .avatar {\r\n  background-color: #8FD57F;\r\n  float: right;\r\n}\r\n.messages .message.right .text_wrapper {\r\n  background-color: #C7EABF;\r\n  margin-right: 20px;\r\n  float: right;\r\n  text-align: right;\r\n  line-height: 1.2;\r\n}\r\n.messages .message.right .text_wrapper::after, .messages .message.right .text_wrapper::before {\r\n  left: 100%;\r\n  border-left-color: #C7EABF;\r\n}\r\n.messages .message.right .text {\r\n  color: #333;\r\n}\r\n\r\n.messages .message .avatar {\r\n  width: 45px;\r\n  height: 45px;\r\n  border-radius: 50%;\r\n  display: inline-block;\r\n  margin: 0!important;\r\n}\r\n.messages .message:not(.first) {\r\n  margin-top: -5px;\r\n}\r\n.messages .message:not(.first) .avatar {\r\n  opacity: 0;\r\n}\r\n.messages .message:not(.first) .text_wrapper::after, .messages .message:not(.first) .text_wrapper::before {\r\n  border-left-color: transparent;\r\n  border-right-color: transparent;\r\n}\r\n.messages .message .text_wrapper {\r\n  display: inline-block;\r\n  padding: 10px 20px;\r\n  border-radius: 6px;\r\n  max-width: calc(100% - 85px);\r\n  min-width: 100px;\r\n  position: relative;\r\n}\r\n.messages .message .text_wrapper::after, .messages .message .text_wrapper:before {\r\n  top: 10px;\r\n  border: solid transparent;\r\n  content: \" \";\r\n  height: 0;\r\n  width: 0;\r\n  position: absolute;\r\n  pointer-events: none;\r\n}\r\n.messages .message .text_wrapper::after {\r\n  border-width: 13px;\r\n  margin-top: 0px;\r\n}\r\n.messages .message .text_wrapper::before {\r\n  border-width: 0px;\r\n}\r\n.messages .message .text_wrapper .text {\r\n  font-size: 18px;\r\n  font-weight: 300;\r\n}\r\n.messages .message .text_wrapper .user {\r\n  font-size: 18px;\r\n  font-weight: 600;\r\n}\r\n\r\ntime {\r\n  color: dimgrey;\r\n  font-size: small;\r\n}\r\n\r\n.expand {\r\n  width: 100%;\r\n}", ""]);
+exports.push([module.i, ".card-group {\r\n  height:100%;\r\n}\r\n\r\n.card {\r\n  border-radius: 0;\r\n  min-height: 100%;\r\n  padding:0;\r\n}\r\n\r\n\r\n.chat {\r\n  list-style: none;\r\n  margin: 0;\r\n  padding: 0;\r\n}\r\n\r\n.card-msg {\r\n  padding: 0;\r\n}\r\n\r\n.card-block {\r\n  overflow-y: scroll;\r\n  -ms-overflow-style: -ms-autohiding-scrollbar;\r\n}\r\n\r\n\r\n.messages {\r\n  position: relative;\r\n  list-style: none;\r\n  padding: 20px;\r\n  margin: 0;\r\n  height: 100%;\r\n  width: 100%;\r\n}\r\n\r\n.messages .message {\r\n  clear: both;\r\n  overflow: hidden;\r\n  margin-bottom: 10px;\r\n  -webkit-transition:all 0.5s linear;\r\n  transition: all 0.5s linear;\r\n}\r\n.messages .message.left .avatar {\r\n  background-color: #7FD7F7;\r\n  float: left;\r\n}\r\n.messages .message.left .text_wrapper {\r\n  background-color: #BFEBFB;\r\n  margin-left: 20px;\r\n}\r\n.messages .message.left .text_wrapper::after, .messages .message.left .text_wrapper::before {\r\n  right: 100%;\r\n  border-right-color: #BFEBFB;\r\n}\r\n.messages .message.left .text {\r\n  color: #333;\r\n}\r\n.messages .message.right .avatar {\r\n  background-color: #8FD57F;\r\n  float: right;\r\n}\r\n.messages .message.right .text_wrapper {\r\n  background-color: #C7EABF;\r\n  margin-right: 20px;\r\n  float: right;\r\n  text-align: right;\r\n  line-height: 1.2;\r\n}\r\n.messages .message.right .text_wrapper::after, .messages .message.right .text_wrapper::before {\r\n  left: 100%;\r\n  border-left-color: #C7EABF;\r\n}\r\n.messages .message.right .text {\r\n  color: #333;\r\n}\r\n\r\n.messages .message .avatar {\r\n  width: 45px;\r\n  height: 45px;\r\n  border-radius: 50%;\r\n  display: inline-block;\r\n  margin: 0!important;\r\n}\r\n.messages .message:not(.first) {\r\n  margin-top: -5px;\r\n}\r\n.messages .message:not(.first) .avatar {\r\n  opacity: 0;\r\n}\r\n.messages .message:not(.first) .text_wrapper::after, .messages .message:not(.first) .text_wrapper::before {\r\n  border-left-color: transparent;\r\n  border-right-color: transparent;\r\n}\r\n.messages .message .text_wrapper {\r\n  display: inline-block;\r\n  padding: 10px 20px;\r\n  border-radius: 6px;\r\n  max-width: calc(100% - 85px);\r\n  min-width: 100px;\r\n  position: relative;\r\n}\r\n.messages .message .text_wrapper::after, .messages .message .text_wrapper:before {\r\n  top: 10px;\r\n  border: solid transparent;\r\n  content: \" \";\r\n  height: 0;\r\n  width: 0;\r\n  position: absolute;\r\n  pointer-events: none;\r\n}\r\n.messages .message .text_wrapper::after {\r\n  border-width: 13px;\r\n  margin-top: 0px;\r\n}\r\n.messages .message .text_wrapper::before {\r\n  border-width: 0px;\r\n}\r\n.messages .message .text_wrapper .text {\r\n  font-size: 18px;\r\n  font-weight: 300;\r\n}\r\n.messages .message .text_wrapper .user {\r\n  font-size: 18px;\r\n  font-weight: 600;\r\n}\r\n\r\ntime {\r\n  color: dimgrey;\r\n  font-size: small;\r\n}\r\n\r\n.expand {\r\n  width: 100%;\r\n}\r\n\r\n.message img {\r\n    max-width: 100%;\r\n    max-height: 70vh;\r\n}\r\n\r\n.fa.fa-file {\r\n  color: whitesmoke;\r\n  margin: 10px;\r\n}\r\n\r\n", ""]);
 
 // exports
 
@@ -1145,7 +1160,7 @@ exports = module.exports = __webpack_require__(18)();
 
 
 // module
-exports.push([module.i, "#currentUser .userdata{\r\n  max-width: calc(100% - 120px);\r\n  display: inline-block;\r\n}\r\n\r\n#currentUser .username, #currentUser .userstatus{\r\n\r\n    white-space: nowrap;\r\n    text-overflow: ellipsis;\r\n    \r\n    overflow: hidden;\r\n}\r\n\r\n#currentUser .avatar {\r\n  vertical-align: initial;\r\n}", ""]);
+exports.push([module.i, "#currentUser .userdata{\r\n  max-width: calc(100% - 120px);\r\n  display: inline-block;\r\n}\r\n\r\n#currentUser .username, #currentUser .userstatus{\r\n\r\n    white-space: nowrap;\r\n    text-overflow: ellipsis;\r\n    \r\n    overflow: hidden;\r\n}\r\n\r\n#currentUser .avatar {\r\n  vertical-align: initial;\r\n}\r\n\r\n#currentUser label {\r\n  margin-bottom: 0;\r\n}", ""]);
 
 // exports
 
@@ -1172,21 +1187,21 @@ module.exports = "<div>\n  <i class=\"fa fa-plus-square-o\" aria-hidden=\"true\"
 /***/ 530:
 /***/ (function(module, exports) {
 
-module.exports = "<ul *ngIf=\"channels\" class=\"list-group list-group-flush\">\n  <li \n    *ngFor=\"let chn of showChannels\"\n    class=\"list-group-item\"\n    [ngClass]=\"{'active': isSelected(chn), 'new': noRead(chn)}\"\n    (click)=\"enterChannel(chn)\"\n  >\n      <img [src]=\"'assets/avatars/'+ chn.avatar || chn.user.avatar\" class=\"img-fluid avatar\"/>\n      <div class=\"flex-column userdata\">\n        <div class=\"username\">{{chn.showname}}</div>\n        <div class=\"userstatus\"><small>{{chn.description || chn.user.status}}</small></div>\n        <span class=\"noread badge badge-danger\" *ngIf=\"noRead(chn)\">{{noRead(chn)}}</span>\n      </div>\n\n  </li>\n</ul>\n"
+module.exports = "<ul *ngIf=\"channels\" class=\"list-group list-group-flush\">\n  <li \n    *ngFor=\"let chn of showChannels\"\n    class=\"list-group-item\"\n    [ngClass]=\"{'active': isSelected(chn), 'new': noRead(chn)}\"\n    (click)=\"enterChannel(chn)\"\n  >\n      <img [src]=\"chn.avatar || chn.user.avatar\" class=\"img-fluid avatar\"/>\n      <div class=\"flex-column userdata\">\n        <div class=\"username\">{{chn.showname}}</div>\n        <div class=\"userstatus\"><small>{{chn.description || chn.user.status}}</small></div>\n        <span class=\"noread badge badge-danger\" *ngIf=\"noRead(chn)\">{{noRead(chn)}}</span>\n      </div>\n\n  </li>\n</ul>\n"
 
 /***/ }),
 
 /***/ 531:
 /***/ (function(module, exports) {
 
-module.exports = "<div class=\"input-group\">\n  <input id=\"btn-input\"\n    type=\"text\"\n    contenteditable=true\n    class=\"form-control input-sm\"\n    (keyup.enter)=\"sendMsg()\"\n    [placeholder]=\"!selectedChannel.id ? 'First select a channel...' : 'Type your message here...'\"\n    autocomplete=\"off\"\n    [(ngModel)]=\"messageText\"\n    (keyup)=\"typing($event)\"\n    [disabled]=\"!selectedChannel.id\"\n  >\n\n    <label class=\"btn btn-info btn-file\" id=\"btn-chat-upload\" [ngClass]=\"{disabled: !selectedChannel.id}\"><!--(click)='uploadFile()'-->\n      <i class=\"fa fa-upload\" aria-hidden=\"true\"></i><input type=\"file\" style=\"display: none;\" #fileInput [disabled]=\"!selectedChannel.id\" (change)=\"uploadFile($event)\">\n    </label>\n    <button class=\"btn btn-danger\" id=\"btn-video\" (click)=\"videoActive ? stopVideo() : startVideo()\" [disabled]=\"!selectedChannel.id\">\n      <i class=\"fa fa-video-camera\" aria-hidden=\"true\"></i>\n    </button>\n\n\n</div>"
+module.exports = "<div class=\"input-group\">\n  <input id=\"btn-input\"\n    type=\"text\"\n    contenteditable=true\n    class=\"form-control input-sm\"\n    (keyup.enter)=\"sendMsg()\"\n    [placeholder]=\"!selectedChannel.id ? 'First select a channel...' : 'Type your message here...'\"\n    autocomplete=\"off\"\n    [(ngModel)]=\"messageText\"\n    (keyup)=\"typing($event)\"\n    [disabled]=\"!selectedChannel.id\"\n  >\n\n    <label class=\"btn btn-info btn-file\" id=\"btn-chat-upload\" [ngClass]=\"{disabled: !selectedChannel.id}\">\n      <i class=\"fa fa-upload\" aria-hidden=\"true\"></i><input type=\"file\" style=\"display: none;\" #fileInput [disabled]=\"!selectedChannel.id\" (change)=\"uploadFile($event)\">\n    </label>\n    <button class=\"btn btn-danger\" id=\"btn-video\" (click)=\"videoActive ? stopVideo() : startVideo()\" [disabled]=\"!selectedChannel.id\">\n      <i class=\"fa fa-video-camera\" aria-hidden=\"true\"></i>\n    </button>\n\n\n</div>"
 
 /***/ }),
 
 /***/ 532:
 /***/ (function(module, exports) {
 
-module.exports = "<ul class=\"messages flex-grow\">\n  <span *ngIf=\"selectedChannel.id && messages[selectedChannel.id]\" class=\"expand\">\n    <span class=\"bottom\">\n    <li *ngFor=\"let message of messages[selectedChannel.id]\"\n        class=\"message\"\n        [ngClass]=\"[\n          isMine(message) ? 'right' : 'left',\n          message.first? 'first' : ''\n          ]\"\n    >\n      <div class=\"avatar\"></div>\n      <div class=\"text_wrapper\">\n        <span class=\"user\" *ngIf=\"message.first\">{{message.author.name}}</span>\n        <div *ngIf=\"message.type !== 'text'\">\n          <a [href]=\"sanitize(message.path)\">\n            <i *ngIf=\"!message.type.includes('image')\" class=\"fa fa-file fa-3\" aria-hidden=\"true\"></i>\n            <img *ngIf=\"message.type.includes('image')\" [src]=\"sanitize(message.path)\" alt=\"\">\n          </a>\n        </div>\n        <div class=\"text\">\n          {{message.text}}\n        </div>\n        <time>{{message.sentAt.toLocaleString()}}</time>\n      </div>\n    </li>\n    </span>\n  </span>\n</ul>\n"
+module.exports = "<ul class=\"messages flex-grow\">\n  <span *ngIf=\"selectedChannel.id && messages[selectedChannel.id]\" class=\"expand\">\n    <span class=\"bottom\">\n    <li *ngFor=\"let message of messages[selectedChannel.id]\"\n        class=\"message\"\n        [ngClass]=\"[\n          isMine(message) ? 'right' : 'left',\n          message.first? 'first' : ''\n          ]\"\n    >\n      <div class=\"avatar\"></div>\n      <div class=\"text_wrapper\">\n        <span class=\"user\" *ngIf=\"message.first\">{{message.author.name}}</span>\n        <div *ngIf=\"message.type !== 'text'\">\n          <a [href]=\"sanitize(message.path)\" target=\"_blank\">\n            <i *ngIf=\"!message.type.includes('image')\" class=\"fa fa-file fa-4x\" aria-hidden=\"true\"></i>\n            <img *ngIf=\"message.type.includes('image')\" [src]=\"sanitize(message.path)\" alt=\"\">\n          </a>\n        </div>\n        <div class=\"text\">\n          {{message.text}}\n        </div>\n        <time>{{message.sentAt.toLocaleString()}}</time>\n      </div>\n    </li>\n    </span>\n  </span>\n</ul>\n"
 
 /***/ }),
 
@@ -1200,21 +1215,21 @@ module.exports = "<div class=\"card-header\">\n  <span *ngIf=\"selectedChannel.i
 /***/ 534:
 /***/ (function(module, exports) {
 
-module.exports = "<div class=\"abs-container\">\n  <div *ngIf=\"videoImgs && videoImgs[selectedChannel.id] && channelsID().length !== 0\">\n    <div class=\"videoUser\" *ngFor=\"let item of channelsID()\">\n      <img class=\"videoImg\" src=\"{{videoImgs[selectedChannel.id][item]}}\" alt=\"\">\n      <img [src]=\"'assets/avatars/'+ searchChannel(item).avatar || searchChannel(item).user.avatar\" class=\"img-fluid avatar\"/>\n    </div>\n  </div>\n  <canvas #canvas id=\"canvas\" style=\"display:none;\"></canvas>\n  <video #video id=\"video\" width=\"20%\" height=\"20%\" src=\"{{videosrc}}\" autoplay class=\"pull-right\">\n  </video>\n</div>"
+module.exports = "<div class=\"abs-container\">\n  <div *ngIf=\"videoImgs && videoImgs[selectedChannel.id] && channelsID().length !== 0\">\n    <div class=\"videoUser\" *ngFor=\"let item of channelsID()\">\n      <img class=\"videoImg\" src=\"{{videoImgs[selectedChannel.id][item]}}\" alt=\"\">\n      <img [src]=\"searchChannel(item).avatar || searchChannel(item).user.avatar\" class=\"img-fluid avatar\"/>\n    </div>\n  </div>\n  <canvas #canvas id=\"canvas\" style=\"display:none;\"></canvas>\n  <video #video id=\"video\" width=\"20%\" height=\"20%\" src=\"{{videosrc}}\" autoplay class=\"pull-right\">\n  </video>\n</div>"
 
 /***/ }),
 
 /***/ 535:
 /***/ (function(module, exports) {
 
-module.exports = "<div class=\"center row justify-content-center\">\n\t<div class=\"col-sm-12 col-md-8\">\n\t\t<form action=\"\" id=\"loginForm\">\n\t\t\t<div class=\"form-group input-group\">\n\t\t\t\t<span class=\"input-group-addon\"><i class=\"fa fa-user-circle-o\" aria-hidden=\"true\"></i></span>\n\t\t\t\t<input [(ngModel)]=\"inputUsername\" [ngClass]=\"{'has-danger': !available()}\" (keyup.enter)=\"loginBtn()\" class=\"form-control\"\n\t\t\t\t\ttype=\"text\" name='username' placeholder=\"username\" />\n\t\t\t</div>\n\n\t\t\t<div class=\"form-group input-group\">\n\t\t\t\t<input [(ngModel)]=\"inputStatus\" (keyup.enter)=\"loginBtn()\" class=\"form-control\" type=\"text\" name='username' placeholder=\"status\"\n\t\t\t\t/>\n\t\t\t</div>\n\n\t\t\t<div class=\"form-group input-group avatarSelect\">\n\t\t\t\t<div class=\"col\" *ngFor=\"let img of avatarImages\">\n\t\t\t\t\t<input type=\"radio\" name=\"avatar\" [(ngModel)]=\"selectedAvatar\" [id]=\"img\" [value]=\"img\" class=\"input_hidden\" />\n\t\t\t\t\t<label for=\"img\"><img [src]=\"'assets/avatars/'+img\" class=\"img-fluid avatar\" [ngClass]=\"{'selected' : selectedAvatar == img}\"  (click)=\"selectedAvatar = img\"/></label>\n\t\t\t\t</div>\n\t\t\t</div>\n\n\t\t\t<div class=\"form-group\">\n\t\t\t\t<button type=\"button\" class=\"btn btn-def btn-block\" (click)=\"loginBtn()\" [disabled]=\"!available()\">Login</button>\n\t\t\t</div>\n\t\t\t<div class=\"form-group text-center\">\n\t\t\t\t<a href=\"https://github.com/Morente5/chat-node.js/\"><i class=\"fa fa-github\" aria-hidden=\"true\"></i> View this project on GitHub</a>\n\t\t\t</div>\n\t\t</form>\n\t</div>\n</div>"
+module.exports = "<div class=\"center row justify-content-center\">\n\t<div class=\"col-sm-12 col-md-8\">\n\t\t<form action=\"\" id=\"loginForm\">\n\t\t\t<div class=\"form-group input-group\">\n\t\t\t\t<span class=\"input-group-addon\"><i class=\"fa fa-user-circle-o\" aria-hidden=\"true\"></i></span>\n\t\t\t\t<input [(ngModel)]=\"inputUsername\" [ngClass]=\"{'has-danger': !available()}\" (keyup.enter)=\"loginBtn()\" class=\"form-control\"\n\t\t\t\t\ttype=\"text\" name='username' placeholder=\"username\" />\n\t\t\t</div>\n\n\t\t\t<div class=\"form-group input-group\">\n\t\t\t\t<input [(ngModel)]=\"inputStatus\" (keyup.enter)=\"loginBtn()\" class=\"form-control\" type=\"text\" name='username' placeholder=\"status\"\n\t\t\t\t/>\n\t\t\t</div>\n\n\t\t\t<div class=\"form-group input-group avatarSelect\">\n\t\t\t\t<div class=\"col\" *ngFor=\"let img of avatarImages\">\n\t\t\t\t\t<input type=\"radio\" name=\"avatar\" [(ngModel)]=\"selectedAvatar\" [id]=\"img\" [value]=\"img\" class=\"input_hidden\" />\n\t\t\t\t\t<label for=\"img\"><img [src]=\"img\" class=\"img-fluid avatar\" [ngClass]=\"{'selected' : selectedAvatar == img}\"  (click)=\"selectedAvatar = img\"/></label>\n\t\t\t\t</div>\n\t\t\t</div>\n\n\t\t\t<div class=\"form-group\">\n\t\t\t\t<button type=\"button\" class=\"btn btn-def btn-block\" (click)=\"loginBtn()\" [disabled]=\"!available()\">Login</button>\n\t\t\t</div>\n\t\t\t<div class=\"form-group text-center\">\n\t\t\t\t<a href=\"https://github.com/Morente5/chat-node.js/\"><i class=\"fa fa-github\" aria-hidden=\"true\"></i> View this project on GitHub</a>\n\t\t\t</div>\n\t\t</form>\n\t</div>\n</div>"
 
 /***/ }),
 
 /***/ 536:
 /***/ (function(module, exports) {
 
-module.exports = "<div id=\"currentUser\">\n  <img [src]=\"'assets/avatars/'+ user.avatar\" class=\"img-fluid avatar\"/>\n  <div class=\"flex-column userdata\">\n        <div class=\"username\">{{user.name}}</div>\n        <div class=\"userstatus\"><small>{{user.status}}</small></div>\n  </div>\n  <i class=\"fa pull-right fa-sign-out\" aria-hidden=\"true\" (click)=\"logout()\"></i>\n</div>"
+module.exports = "<div id=\"currentUser\">\n  <label>\n    <img [src]=\"user.avatar\" class=\"img-fluid avatar\"/>\n    <input type=\"file\" style=\"display: none;\" #fileInput (change)=\"uploadAvatar($event)\">\n  </label>\n  <div class=\"flex-column userdata\">\n        <div class=\"username\">{{user.name}}</div>\n        <div class=\"userstatus\"><small>{{user.status}}</small></div>\n  </div>\n  <i class=\"fa pull-right fa-sign-out\" aria-hidden=\"true\" (click)=\"logout()\"></i>\n</div>"
 
 /***/ }),
 
@@ -1279,7 +1294,6 @@ var ChannelsService = (function () {
                 _this.messages[chnID].push(message);
                 _this.subjectMessages.next(_this.messages);
             }
-            //console.log('mensajes', this.messages);
         });
         this.socketService.subjectCurrentUser.subscribe(function (usr) { return _this.loggedUser = usr; });
         this.socketService.subjectChannels.subscribe(function (channels) { return _this.channels = channels; });
@@ -1348,7 +1362,12 @@ var LoginService = (function () {
         var _this = this;
         this.ls = ls;
         this.socketService = socketService;
-        this.socketService.subjectCurrentUser.subscribe(function (usr) { return _this.loggedUser = usr; });
+        this.socketService.subjectCurrentUser.subscribe(function (usr) {
+            if (usr.name) {
+                _this.ls.set('user', usr);
+            }
+            _this.loggedUser = usr;
+        });
         this.socketService.subjectLoggedIn.subscribe(function (log) { return _this.loggedIn = log; });
         this.socketService.subjectUsers.subscribe(function (users) { return _this.users = users; });
     }

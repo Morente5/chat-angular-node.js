@@ -1,5 +1,8 @@
 <div id="currentUser">
-  <img [src]="'assets/avatars/'+ user.avatar" class="img-fluid avatar"/>
+  <label>
+    <img [src]="user.avatar" class="img-fluid avatar"/>
+    <input type="file" style="display: none;" #fileInput (change)="uploadAvatar($event)">
+  </label>
   <div class="flex-column userdata">
         <div class="username">{{user.name}}</div>
         <div class="userstatus"><small>{{user.status}}</small></div>

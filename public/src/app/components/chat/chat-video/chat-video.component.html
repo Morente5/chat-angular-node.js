@@ -2,7 +2,7 @@
   <div *ngIf="videoImgs && videoImgs[selectedChannel.id] && channelsID().length !== 0">
     <div class="videoUser" *ngFor="let item of channelsID()">
       <img class="videoImg" src="{{videoImgs[selectedChannel.id][item]}}" alt="">
-      <img [src]="'assets/avatars/'+ searchChannel(item).avatar || searchChannel(item).user.avatar" class="img-fluid avatar"/>
+      <img [src]="searchChannel(item).avatar || searchChannel(item).user.avatar" class="img-fluid avatar"/>
     </div>
   </div>
   <canvas #canvas id="canvas" style="display:none;"></canvas>

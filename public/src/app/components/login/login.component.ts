@@ -13,11 +13,11 @@ import { User } from './../../model/user';
 export class LoginComponent implements OnInit {
   inputUsername: string;
   inputStatus: string;
-  avatarImages = ['man.png',
-                  'boy.png',
-                  'girl.png',
-                  'man-2.png',
-                  'man-3.png'];
+  avatarImages = ['/assets/avatars/man.png',
+                  '/assets/avatars/boy.png',
+                  '/assets/avatars/girl.png',
+                  '/assets/avatars/man-2.png',
+                  '/assets/avatars/man-3.png'];
   users: Array<User>;
   selectedAvatar: string;
   constructor(
@@ -33,7 +33,7 @@ export class LoginComponent implements OnInit {
   loginBtn() {
     if (this.inputUsername && this.inputUsername.trim()) {
       this.loginService.login(
-        new User(this.inputUsername.trim().replace(/[\W_]+/g, '-'), this.selectedAvatar || 'man-3.png', this.inputStatus)
+        new User(this.inputUsername.trim().replace(/[\W_]+/g, '-'), this.selectedAvatar || '/assets/avatars/man-3.png', this.inputStatus)
       );
     }
   }

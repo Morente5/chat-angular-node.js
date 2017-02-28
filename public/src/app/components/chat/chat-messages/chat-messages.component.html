@@ -12,8 +12,8 @@
       <div class="text_wrapper">
         <span class="user" *ngIf="message.first">{{message.author.name}}</span>
         <div *ngIf="message.type !== 'text'">
-          <a [href]="sanitize(message.path)">
-            <i *ngIf="!message.type.includes('image')" class="fa fa-file fa-3" aria-hidden="true"></i>
+          <a [href]="sanitize(message.path)" target="_blank">
+            <i *ngIf="!message.type.includes('image')" class="fa fa-file fa-4x" aria-hidden="true"></i>
             <img *ngIf="message.type.includes('image')" [src]="sanitize(message.path)" alt="">
           </a>
         </div>

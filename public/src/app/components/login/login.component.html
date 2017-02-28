@@ -15,7 +15,7 @@
 			<div class="form-group input-group avatarSelect">
 				<div class="col" *ngFor="let img of avatarImages">
 					<input type="radio" name="avatar" [(ngModel)]="selectedAvatar" [id]="img" [value]="img" class="input_hidden" />
-					<label for="img"><img [src]="'assets/avatars/'+img" class="img-fluid avatar" [ngClass]="{'selected' : selectedAvatar == img}"  (click)="selectedAvatar = img"/></label>
+					<label for="img"><img [src]="img" class="img-fluid avatar" [ngClass]="{'selected' : selectedAvatar == img}"  (click)="selectedAvatar = img"/></label>
 				</div>
 			</div>
 

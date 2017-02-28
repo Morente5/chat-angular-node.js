@@ -34,12 +34,13 @@ export class ChannelsService {
         this.messages[chnID].push(message);
         this.subjectMessages.next(this.messages);
       }
-      //console.log('mensajes', this.messages);
+
     });
 
     this.socketService.subjectCurrentUser.subscribe(usr => this.loggedUser = usr);
     this.socketService.subjectChannels.subscribe(channels => this.channels = channels);
     this.subjectSelectedChannel.subscribe(chn => this.selectedChannel = chn);
+
   }
 
   enterChannel(channel: Channel) {

@@ -46,21 +46,7 @@ export class SocketService {
     this.delivery = new Delivery(this.socket);
 
     this.socket.on('load', (channels, users) => {
-      const tempPublicChannels = channels
-        .map(channel => new Channel(channel.priv, channel.description, channel.id, new User(''), 'chat.png'));
-      const tempUsers = users.map(user => new User(user.name, user.avatar, user.status, user.id));
-
-      if (this.loggedIn) {
-        let tempPrivateChannels: Array<Channel> = [];
-        users.forEach(user => {
-          if (user.name !== this.loggedUser.name) {
-            tempPrivateChannels.push(new Channel(true, user.status, user.name, user, user.avatar));
-          }
-        });
-
-        this.subjectUsers.next(tempUsers);
-        this.subjectChannels.next(tempPublicChannels.concat(tempPrivateChannels));
-      }
+      this.load(channels, users);
     });
 
     this.socket.on('logged-in', user => {
@@ -89,28 +75,12 @@ export class SocketService {
       this.subjectTyping.next(this.channels);
     });
 
-    this.delivery.on('delivery.connect', delivery => {
-      $('input[type=submit]').click(function (evt) {
-        let file = $('input[type=file]')[0].files[0];
-        //let extraParams = {foo: 'bar'};
-        delivery.send(file/*, extraParams*/);
-        evt.preventDefault();
-      });
-    });
-
     this.delivery.on('send.success', function (fileUID) {
       console.log('file was successfully sent.');
     });
 
     this.delivery.on('receive.start', function (fileUID) {
       console.log('receiving a file!');
-    });
-
-    this.delivery.on('receive.success', function (file) {
-      let params = file.params;
-      if (file.isImage()) {
-        $('img').attr('src', file.dataURL());
-      };
     });
 
     this.socket.on('video', (image, user, channel) => {
@@ -134,7 +104,46 @@ export class SocketService {
       this.subjectUserNotif.next(user.name + ' logged out');
     });
 
-    window.setTimeout( () => this.subjectReady.next(true), 800);
+    this.socket.on('loadAv', (user, path) => {
+      this.users.find(usr => usr.id === user.id).avatar = path;
+      this.subjectUsers.next(this.users);
+      console.log(this.users);
+    });
+
+    this.subjectUsers.subscribe(users => {
+      if (this.loggedIn && this.loggedUser.id && this.ready && this.channels.length !== 0 && this.users.length !== 0) {
+        this.channels.forEach(channel => {
+          let user = this.users.find(usr => usr.id === channel.id);
+          if (user) {
+            this.channels.find(chn => chn.id === user.id).avatar = user.avatar;
+          }
+        });
+        this.subjectChannels.next(this.channels);
+
+        this.loggedUser.avatar = this.users.find(user => user.id === this.loggedUser.id).avatar;
+        this.subjectCurrentUser.next(this.loggedUser);
+      }
+    });
+
+    window.setTimeout(() => this.subjectReady.next(true), 800);
+  }
+
+  load(channels = this.channels, users = this.users) {
+    const tempPublicChannels = channels
+      .map(channel => new Channel(channel.priv, channel.description, channel.id, new User(''), '/assets/avatars/chat.png'));
+    const tempUsers = users.map(user => new User(user.name, user.avatar, user.status, user.id));
+
+    if (this.loggedIn) {
+      let tempPrivateChannels: Array<Channel> = [];
+      users.forEach(user => {
+        if (user.name !== this.loggedUser.name) {
+          tempPrivateChannels.push(new Channel(true, user.status, user.name, user, user.avatar));
+        }
+      });
+
+      this.subjectUsers.next(tempUsers);
+      this.subjectChannels.next(tempPublicChannels.concat(tempPrivateChannels));
+    }
   }
 
   login(user: User) {
@@ -166,6 +175,10 @@ export class SocketService {
   }
 
   sendFile(file, channel: Channel) {
-    this.delivery.send(file, {user: this.loggedUser, channel: channel, type: 'message'});
+    this.delivery.send(file, { user: this.loggedUser, channel: channel, type: 'message' });
+  }
+  sendAvatar(file) {
+    console.log(file);
+    this.delivery.send(file, { user: this.loggedUser, type: 'avatar' });
   }
 }

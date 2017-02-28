@@ -20,7 +20,12 @@ export class LoginService {
     private ls: LocalStorageService,
     private socketService: SocketService
   ) {
-    this.socketService.subjectCurrentUser.subscribe(usr => this.loggedUser = usr);
+    this.socketService.subjectCurrentUser.subscribe(usr => {
+      if (usr.name) {
+        this.ls.set('user', usr);
+      }
+      this.loggedUser = usr;
+    });
     this.socketService.subjectLoggedIn.subscribe(log => this.loggedIn = log);
 
     this.socketService.subjectUsers.subscribe(users => this.users = users);

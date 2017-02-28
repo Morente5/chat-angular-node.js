@@ -132,3 +132,14 @@ time {
 .expand {
   width: 100%;
 }
+
+.message img {
+    max-width: 100%;
+    max-height: 70vh;
+}
+
+.fa.fa-file {
+  color: whitesmoke;
+  margin: 10px;
+}
+

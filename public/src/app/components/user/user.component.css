@@ -14,3 +14,7 @@
 #currentUser .avatar {
   vertical-align: initial;
 }
+
+#currentUser label {
+  margin-bottom: 0;
+}

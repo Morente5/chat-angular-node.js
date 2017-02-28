@@ -36,4 +36,8 @@ export class UserComponent implements OnInit {
     this.loginService.logout();
   }
 
+  uploadAvatar(event) {
+    this.socketService.sendAvatar(event.target.files[0]);
+  }
+
 }
