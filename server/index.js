@@ -116,16 +116,15 @@ io.on('connection', function (socket) {
 
     delivery.on('receive.success', function (file) {
         var params = file.params;
-        fs.writeFile('public/dist/assets/' + file.name, file.buffer, function (err) {
+
+        fs.writeFile('assets/' + file.name, file.buffer, function (err) {
             if (err) {
                 console.log('File could not be saved.');
             } else {
-                var filetype;
+                var filetype = mime.lookup('assets/' + file.name);
+                var pathz = '/assets/' + file.name;
+                console.log(params.type);
                 if (params.type === 'message') {
-                    filetype = mime.lookup('public\\dist\\assets\\' + file.name);
-                    console.log(filetype);
-                    console.log(file.name);
-                    var pathz = path.resolve(__dirname + '\\..\\public\\dist\\assets\\' + file.name);
                     message = {author: params.user, channel: params.channel, type: filetype, text: file.name, first: false, path: pathz};
                     if (params.channel.priv) {
                         io.sockets.in(params.channel.id).emit('message', message);
@@ -133,6 +132,9 @@ io.on('connection', function (socket) {
                     } else {
                         io.sockets.emit('message', message);
                     }
+                }
+                if (params.type === 'avatar' && filetype.includes('image')) {
+                    io.sockets.emit('loadAv', params.user, pathz);
                 }
                 console.log('File saved.');
             }
