@@ -782,8 +782,12 @@ var ChatVideoComponent = (function () {
         this.channelsService = channelsService;
         this.videoImgs = {};
         this.videoInterval = 0;
+        this.isStreaming = false;
         this.socketService.subjectChannels.subscribe(function (channels) {
             _this.channels = channels;
+        });
+        this.socketService.subjectLoggedIn.subscribe(function (log) {
+            _this.loggedIn = log;
         });
         this.socketService.subjectVideo.subscribe(function (channels) {
             _this.videoCh = channels;
@@ -832,15 +836,17 @@ var ChatVideoComponent = (function () {
         }, 100);
     };
     ChatVideoComponent.prototype.stopVideo = function () {
-        console.log('stopping');
-        this.video.nativeElement.src = null;
-        this.video.nativeElement.pause();
-        this.stream.getVideoTracks().forEach(function (track) { return track.stop(); });
-        this.stream.getAudioTracks().forEach(function (track) { return track.stop(); });
-        this.isStreaming = false;
-        window.clearTimeout(this.videoInterval);
-        this.videoInterval = 0;
-        this.channelsService.stopVideo();
+        if (this.isStreaming && this.loggedIn) {
+            console.log('stopping');
+            this.video.nativeElement.src = null;
+            this.video.nativeElement.pause();
+            this.stream.getVideoTracks().forEach(function (track) { return track.stop(); });
+            this.stream.getAudioTracks().forEach(function (track) { return track.stop(); });
+            this.isStreaming = false;
+            window.clearTimeout(this.videoInterval);
+            this.videoInterval = 0;
+            this.channelsService.stopVideo();
+        }
     };
     ChatVideoComponent.prototype.channelsID = function () {
         return Object.keys(this.videoImgs[this.selectedChannel.id]);
@@ -1363,7 +1369,7 @@ var LoginService = (function () {
         this.ls = ls;
         this.socketService = socketService;
         this.socketService.subjectCurrentUser.subscribe(function (usr) {
-            if (usr.name) {
+            if (usr && usr.name) {
                 _this.ls.set('user', usr);
             }
             _this.loggedUser = usr;
@@ -1398,7 +1404,9 @@ var LoginService = (function () {
     };
     // Name chosen
     LoginService.prototype.chosen = function (testUser, users) {
-        return users.findIndex(function (usr) { return usr.name === testUser.name; }) !== -1;
+        if (testUser && testUser.name && users.length) {
+            return users.findIndex(function (usr) { return usr.name === testUser.name; }) !== -1;
+        }
     };
     LoginService = __decorate([
         __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["Injectable"])(), 

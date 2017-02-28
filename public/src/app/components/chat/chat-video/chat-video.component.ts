@@ -22,7 +22,8 @@ export class ChatVideoComponent implements AfterViewInit {
   videosrc: string;
   videoInterval = 0;
   context;
-  isStreaming: boolean;
+  isStreaming: boolean = false;
+  loggedIn: boolean;
   media;
   stream;
   constructor(
@@ -31,6 +32,9 @@ export class ChatVideoComponent implements AfterViewInit {
   ) {
     this.socketService.subjectChannels.subscribe(channels => {
       this.channels = channels;
+    });
+    this.socketService.subjectLoggedIn.subscribe(log => {
+      this.loggedIn = log;
     });
 
 
@@ -93,18 +97,20 @@ export class ChatVideoComponent implements AfterViewInit {
   }
 
   stopVideo() {
-    console.log('stopping');
-    this.video.nativeElement.src = null;
-    this.video.nativeElement.pause();
-    this.stream.getVideoTracks().forEach(track => track.stop());
-    this.stream.getAudioTracks().forEach(track => track.stop());
+    if (this.isStreaming && this.loggedIn) {
+      console.log('stopping');
+      this.video.nativeElement.src = null;
+      this.video.nativeElement.pause();
+      this.stream.getVideoTracks().forEach(track => track.stop());
+      this.stream.getAudioTracks().forEach(track => track.stop());
 
-    this.isStreaming = false;
+      this.isStreaming = false;
 
-    window.clearTimeout(this.videoInterval);
-    this.videoInterval = 0;
+      window.clearTimeout(this.videoInterval);
+      this.videoInterval = 0;
 
-    this.channelsService.stopVideo();
+      this.channelsService.stopVideo();
+    }
   }
 
   channelsID() {

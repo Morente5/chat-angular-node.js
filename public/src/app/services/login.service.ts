@@ -21,7 +21,7 @@ export class LoginService {
     private socketService: SocketService
   ) {
     this.socketService.subjectCurrentUser.subscribe(usr => {
-      if (usr.name) {
+      if (usr && usr.name) {
         this.ls.set('user', usr);
       }
       this.loggedUser = usr;
@@ -65,7 +65,9 @@ export class LoginService {
 
   // Name chosen
   chosen(testUser: User, users: Array<User>) {
-    return users.findIndex(usr => usr.name === testUser.name) !== -1;
+    if (testUser && testUser.name && users.length) {
+      return users.findIndex(usr => usr.name === testUser.name) !== -1;
+    }
   }
 
 }
