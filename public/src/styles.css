@@ -229,3 +229,19 @@ background-image: linear-gradient(to top, #4E648E 0%, #152B55 100%);
 chat-video {
   position: relative;
 }
+
+#notif {
+  color: white;
+  position: fixed;
+  left: 50%;
+  top: 20%;
+  text-align: left;
+  width: 300px;
+  height: 40px;
+  padding: 8px;
+  text-align: center;
+  transform: translate(-50%, -50%);
+  background-color: #2E4372;
+  opacity: .7;
+  display: none;
+}

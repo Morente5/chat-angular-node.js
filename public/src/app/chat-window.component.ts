@@ -1,7 +1,6 @@
-import { Component, ElementRef, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 
-//import 'jquery';
-declare var $:any;
+declare var $: any;
 
 import { User } from './model/user';
 import { SocketService } from './services/socket.service';
@@ -15,19 +14,25 @@ import { LoginService } from './services/login.service';
 export class WindowComponent {
   loggedIn: boolean;
   ready: boolean = false;
+  notification: string = '';
 
   constructor(
     private socketService: SocketService,
-    private loginService: LoginService,
-    private elRef: ElementRef
+    private loginService: LoginService
   ) {
     this.socketService.subjectLoggedIn.subscribe(logged => this.loggedIn = logged);
     this.socketService.subjectReady.subscribe(ready => this.ready = ready);
-    this.socketService.subjectMessage.subscribe(message => {  // TODO if message is in channel
+    this.socketService.subjectMessage.subscribe(message => {
       $('chat-messages').animate({ scrollTop: $('chat-messages').prop('scrollHeight')}, 300);
-      //const objDiv = document.querySelector('.card-msg');
-      //objDiv.scrollTop = objDiv.scrollHeight;
     });
+    this.socketService.subjectUserNotif.subscribe(notif => {
+      this.notification = notif;
+      if (this.loggedIn) {
+        $('#notif').show('slow');
+        window.setTimeout(() => $('#notif').hide('slow'), 6000);
+      }
+    });
+
   }
 
   ngOnInit() {

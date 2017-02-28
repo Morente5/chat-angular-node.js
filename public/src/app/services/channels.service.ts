@@ -52,9 +52,14 @@ export class ChannelsService {
     const newMessage = new Message(
       this.loggedUser,
       this.selectedChannel,
+      'text',
       messageText
     );
     this.socketService.sendMsg(newMessage);
+  }
+
+  sendFile(file) {
+    this.socketService.sendFile(file, this.selectedChannel);
   }
 
   sendVideo(image) {

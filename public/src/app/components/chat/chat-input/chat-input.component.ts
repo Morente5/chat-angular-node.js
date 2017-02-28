@@ -50,7 +50,8 @@ export class ChatInputComponent implements OnInit {
 
   }
 
-  uploadFile() {
+  uploadFile(event) {
+    this.channelsService.sendFile(event.target.files[0]); console.log(event);
 
   }
 

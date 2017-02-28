@@ -1,6 +1,6 @@
 webpackJsonp([1,5],{
 
-/***/ 123:
+/***/ 124:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -31,7 +31,7 @@ var User = (function () {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_rxjs_BehaviorSubject___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_rxjs_BehaviorSubject__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_socket_io_client__ = __webpack_require__(550);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_socket_io_client___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_socket_io_client__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__model_user__ = __webpack_require__(123);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__model_user__ = __webpack_require__(124);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__model_channel__ = __webpack_require__(288);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__model_message__ = __webpack_require__(289);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return SocketService; });
@@ -61,6 +61,7 @@ var SocketService = (function () {
         this.subjectLoggedIn = new __WEBPACK_IMPORTED_MODULE_1_rxjs_BehaviorSubject__["BehaviorSubject"](false);
         this.subjectReady = new __WEBPACK_IMPORTED_MODULE_1_rxjs_BehaviorSubject__["BehaviorSubject"](false);
         this.subjectMessage = new __WEBPACK_IMPORTED_MODULE_1_rxjs_BehaviorSubject__["BehaviorSubject"]('');
+        this.subjectUserNotif = new __WEBPACK_IMPORTED_MODULE_1_rxjs_BehaviorSubject__["BehaviorSubject"]('');
         this.subjectChannels.subscribe(function (channels) { return _this.channels = channels; });
         this.subjectUsers.subscribe(function (users) { return _this.users = users; });
         this.subjectCurrentUser.subscribe(function (usr) { return _this.loggedUser = usr; });
@@ -89,13 +90,12 @@ var SocketService = (function () {
             _this.subjectLoggedIn.next(true);
         });
         this.socket.on('message', function (message) {
-            var tempMessage = new __WEBPACK_IMPORTED_MODULE_5__model_message__["a" /* Message */](message.author, message.channel, message.text, message.first);
+            var tempMessage = new __WEBPACK_IMPORTED_MODULE_5__model_message__["a" /* Message */](message.author, message.channel, message.type, message.text, message.first, message.path || '');
             _this.subjectMessage.next(tempMessage);
         });
         this.socket.on('typing', function (user, channel) {
             var chnID = channel.priv ? user.id : channel.id;
             _this.channels[_this.channels.findIndex(function (chn) { return chnID === chn.id; })].typing.push(new __WEBPACK_IMPORTED_MODULE_3__model_user__["a" /* User */](user.name, user.avatar, user.status, user.id));
-            console.log(_this.channels[_this.channels.findIndex(function (chn) { return chnID === chn.id; })]);
             _this.subjectTyping.next(_this.channels);
         });
         this.socket.on('stop-typing', function (user, channel) {
@@ -104,7 +104,6 @@ var SocketService = (function () {
             var j = _this.channels[i].typing.findIndex(function (usr) { return user.id === usr.id; });
             _this.channels[i].typing.splice(j, 1);
             _this.subjectTyping.next(_this.channels);
-            console.log('stoptyping', user, _this.channels.find(function (chn) { return chnID === chn.id; }));
         });
         this.delivery.on('delivery.connect', function (delivery) {
             $('input[type=submit]').click(function (evt) {
@@ -139,7 +138,13 @@ var SocketService = (function () {
                 delete channel.video[user.id];
             });
         });
-        window.setTimeout(function () { return _this.subjectReady.next(true); }, 1000);
+        this.socket.on('userloggedin', function (user) {
+            _this.subjectUserNotif.next(user.name + ' logged in');
+        });
+        this.socket.on('userloggedout', function (user) {
+            _this.subjectUserNotif.next(user.name + ' logged out');
+        });
+        window.setTimeout(function () { return _this.subjectReady.next(true); }, 800);
     }
     SocketService.prototype.login = function (user) {
         this.socket.emit('login', user);
@@ -163,6 +168,9 @@ var SocketService = (function () {
     };
     SocketService.prototype.stopVideo = function () {
         this.socket.emit('stopVideo', this.loggedUser);
+    };
+    SocketService.prototype.sendFile = function (file, channel) {
+        this.delivery.send(file, { user: this.loggedUser, channel: channel, type: 'message' });
     };
     SocketService = __decorate([
         __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["Injectable"])(), 
@@ -206,14 +214,17 @@ var Channel = (function () {
 "use strict";
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return Message; });
 var Message = (function () {
-    function Message(author, channel, text, first) {
+    function Message(author, channel, type, text, first, path) {
         if (first === void 0) { first = false; }
+        if (path === void 0) { path = ''; }
         this.author = author;
         this.channel = channel;
         this.isRead = false;
         this.sentAt = new Date();
         this.text = text;
+        this.type = type || 'text';
         this.first = first;
+        this.path = path;
     }
     Message.prototype.isFrom = function (user) {
         return user.name === this.author.name;
@@ -263,7 +274,7 @@ __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__angular_platform_browser_dyna
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_platform_browser__ = __webpack_require__(176);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_platform_browser__ = __webpack_require__(122);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_core__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__angular_forms__ = __webpack_require__(404);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__angular_http__ = __webpack_require__(410);
@@ -365,18 +376,23 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 
 
 var WindowComponent = (function () {
-    function WindowComponent(socketService, loginService, elRef) {
+    function WindowComponent(socketService, loginService) {
         var _this = this;
         this.socketService = socketService;
         this.loginService = loginService;
-        this.elRef = elRef;
         this.ready = false;
+        this.notification = '';
         this.socketService.subjectLoggedIn.subscribe(function (logged) { return _this.loggedIn = logged; });
         this.socketService.subjectReady.subscribe(function (ready) { return _this.ready = ready; });
         this.socketService.subjectMessage.subscribe(function (message) {
             $('chat-messages').animate({ scrollTop: $('chat-messages').prop('scrollHeight') }, 300);
-            //const objDiv = document.querySelector('.card-msg');
-            //objDiv.scrollTop = objDiv.scrollHeight;
+        });
+        this.socketService.subjectUserNotif.subscribe(function (notif) {
+            _this.notification = notif;
+            if (_this.loggedIn) {
+                $('#notif').show('slow');
+                window.setTimeout(function () { return $('#notif').hide('slow'); }, 6000);
+            }
         });
     }
     WindowComponent.prototype.ngOnInit = function () {
@@ -388,10 +404,10 @@ var WindowComponent = (function () {
             template: __webpack_require__(528),
             styles: [__webpack_require__(512)]
         }), 
-        __metadata('design:paramtypes', [(typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_1__services_socket_service__["a" /* SocketService */] !== 'undefined' && __WEBPACK_IMPORTED_MODULE_1__services_socket_service__["a" /* SocketService */]) === 'function' && _a) || Object, (typeof (_b = typeof __WEBPACK_IMPORTED_MODULE_2__services_login_service__["a" /* LoginService */] !== 'undefined' && __WEBPACK_IMPORTED_MODULE_2__services_login_service__["a" /* LoginService */]) === 'function' && _b) || Object, (typeof (_c = typeof __WEBPACK_IMPORTED_MODULE_0__angular_core__["ElementRef"] !== 'undefined' && __WEBPACK_IMPORTED_MODULE_0__angular_core__["ElementRef"]) === 'function' && _c) || Object])
+        __metadata('design:paramtypes', [(typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_1__services_socket_service__["a" /* SocketService */] !== 'undefined' && __WEBPACK_IMPORTED_MODULE_1__services_socket_service__["a" /* SocketService */]) === 'function' && _a) || Object, (typeof (_b = typeof __WEBPACK_IMPORTED_MODULE_2__services_login_service__["a" /* LoginService */] !== 'undefined' && __WEBPACK_IMPORTED_MODULE_2__services_login_service__["a" /* LoginService */]) === 'function' && _b) || Object])
     ], WindowComponent);
     return WindowComponent;
-    var _a, _b, _c;
+    var _a, _b;
 }());
 //# sourceMappingURL=D:/Users/Alejandro/OneDrive/Documentos/DAW/DWEC/Node Server/chat/public/src/chat-window.component.js.map
 
@@ -472,6 +488,15 @@ var ChannelsComponent = (function () {
         });
         this.channelsService.subjectSelectedChannel.subscribe(function (channel) {
             _this.selectedChannel = channel;
+            if (_this.messages && _this.messages[channel.id] && _this.loggedUser) {
+                _this.messages[channel.id].forEach(function (msg) { return msg.isRead = true; });
+            }
+        });
+        this.channelsService.subjectMessages.subscribe(function (messages) {
+            _this.messages = messages;
+            if (_this.messages && _this.messages[_this.selectedChannel.id] && _this.loggedUser) {
+                _this.messages[_this.selectedChannel.id].forEach(function (msg) { return msg.isRead = true; });
+            }
         });
     }
     ChannelsComponent.prototype.ngOnInit = function () {
@@ -482,6 +507,10 @@ var ChannelsComponent = (function () {
     };
     ChannelsComponent.prototype.isSelected = function (channel) {
         return channel.id === this.selectedChannel.id;
+    };
+    ChannelsComponent.prototype.noRead = function (channel) {
+        return (this.messages[channel.id] && !this.isSelected(channel)) ?
+            this.messages[channel.id].reduce(function (noread, msg) { return msg.isRead ? noread : ++noread; }, 0) : 0;
     };
     ChannelsComponent = __decorate([
         __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["Component"])({
@@ -545,7 +574,9 @@ var ChatInputComponent = (function () {
             this.messageText = '';
         }
     };
-    ChatInputComponent.prototype.uploadFile = function () {
+    ChatInputComponent.prototype.uploadFile = function (event) {
+        this.channelsService.sendFile(event.target.files[0]);
+        console.log(event);
     };
     ChatInputComponent.prototype.typing = function (event) {
         var _this = this;
@@ -599,6 +630,7 @@ var ChatInputComponent = (function () {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__services_channels_service__ = __webpack_require__(58);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__services_socket_service__ = __webpack_require__(25);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__angular_platform_browser__ = __webpack_require__(122);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return ChatMessagesComponent; });
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -612,11 +644,13 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 
 
 
+
 var ChatMessagesComponent = (function () {
-    function ChatMessagesComponent(channelsService, socketService) {
+    function ChatMessagesComponent(channelsService, socketService, sanitizer) {
         var _this = this;
         this.channelsService = channelsService;
         this.socketService = socketService;
+        this.sanitizer = sanitizer;
         this.channelsService.subjectMessages.subscribe(function (messages) { return _this.messages = messages; });
         this.channelsService.subjectSelectedChannel.subscribe(function (channel) { return _this.selectedChannel = channel; });
         this.socketService.subjectCurrentUser.subscribe(function (user) { return _this.loggedUser = user; });
@@ -626,16 +660,19 @@ var ChatMessagesComponent = (function () {
     ChatMessagesComponent.prototype.isMine = function (message) {
         return this.loggedUser.name === message.author.name;
     };
+    ChatMessagesComponent.prototype.sanitize = function (url) {
+        return this.sanitizer.bypassSecurityTrustUrl(url);
+    };
     ChatMessagesComponent = __decorate([
         __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["Component"])({
             selector: 'chat-messages',
             template: __webpack_require__(532),
             styles: [__webpack_require__(516)]
         }), 
-        __metadata('design:paramtypes', [(typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_1__services_channels_service__["a" /* ChannelsService */] !== 'undefined' && __WEBPACK_IMPORTED_MODULE_1__services_channels_service__["a" /* ChannelsService */]) === 'function' && _a) || Object, (typeof (_b = typeof __WEBPACK_IMPORTED_MODULE_2__services_socket_service__["a" /* SocketService */] !== 'undefined' && __WEBPACK_IMPORTED_MODULE_2__services_socket_service__["a" /* SocketService */]) === 'function' && _b) || Object])
+        __metadata('design:paramtypes', [(typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_1__services_channels_service__["a" /* ChannelsService */] !== 'undefined' && __WEBPACK_IMPORTED_MODULE_1__services_channels_service__["a" /* ChannelsService */]) === 'function' && _a) || Object, (typeof (_b = typeof __WEBPACK_IMPORTED_MODULE_2__services_socket_service__["a" /* SocketService */] !== 'undefined' && __WEBPACK_IMPORTED_MODULE_2__services_socket_service__["a" /* SocketService */]) === 'function' && _b) || Object, (typeof (_c = typeof __WEBPACK_IMPORTED_MODULE_3__angular_platform_browser__["c" /* DomSanitizer */] !== 'undefined' && __WEBPACK_IMPORTED_MODULE_3__angular_platform_browser__["c" /* DomSanitizer */]) === 'function' && _c) || Object])
     ], ChatMessagesComponent);
     return ChatMessagesComponent;
-    var _a, _b;
+    var _a, _b, _c;
 }());
 //# sourceMappingURL=D:/Users/Alejandro/OneDrive/Documentos/DAW/DWEC/Node Server/chat/public/src/chat-messages.component.js.map
 
@@ -829,7 +866,7 @@ var ChatVideoComponent = (function () {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__services_login_service__ = __webpack_require__(80);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__services_socket_service__ = __webpack_require__(25);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__model_user__ = __webpack_require__(123);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__model_user__ = __webpack_require__(124);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return LoginComponent; });
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -892,7 +929,7 @@ var LoginComponent = (function () {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__services_socket_service__ = __webpack_require__(25);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__services_login_service__ = __webpack_require__(80);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__model_user__ = __webpack_require__(123);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__model_user__ = __webpack_require__(124);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return UserComponent; });
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -1000,7 +1037,7 @@ exports = module.exports = __webpack_require__(18)();
 
 
 // module
-exports.push([module.i, ".list-group {\r\n  width: 100%;\r\n  height: 100%;\r\n  overflow-y: auto;\r\n  overflow-x: hidden;\r\n  background-color: #f9fef6;\r\n}\r\n\r\n.list-group-flush .list-group-item {\r\n  -ms-flex-negative: 0;\r\n      flex-shrink: 0;\r\n  border-radius: 0;\r\n  border-bottom: 1px solid #B3E095;\r\n}\r\n.list-group-item {\r\n  background-color: #fdfefc;\r\n  border: 1px solid #B3E095;\r\n  border-left: 0;\r\n  border-right: 0;\r\n}\r\n\r\n.list-group-item.active {\r\n    color: whitesmoke;\r\n    background-color: #B3E095;\r\n    border-color: #B3E095;\r\n}\r\n\r\n.list-group-item .username, .list-group-item .userstatus {\r\n  text-overflow: ellipsis;\r\n  white-space: nowrap;\r\n  overflow: hidden;\r\n}\r\n\r\n.list-group-item .userdata {\r\n  max-width: calc(100% - 85px);\r\n}", ""]);
+exports.push([module.i, ".list-group {\r\n  width: 100%;\r\n  height: 100%;\r\n  overflow-y: auto;\r\n  overflow-x: hidden;\r\n  background-color: #f9fef6;\r\n}\r\n\r\n.list-group-flush .list-group-item {\r\n  -ms-flex-negative: 0;\r\n      flex-shrink: 0;\r\n  border-radius: 0;\r\n  border-bottom: 1px solid #8FD57F;\r\n}\r\n.list-group-item {\r\n  background-color: #fdfefc;\r\n  border: 1px solid #8FD57F;\r\n  border-left: 0;\r\n  border-right: 0;\r\n  position: relative;\r\n}\r\n\r\n.list-group-item.active {\r\n    color: whitesmoke;\r\n    background-color: #8FD57F;\r\n    border-color: #8FD57F;\r\n}\r\n.list-group-item.new {\r\n  -webkit-animation: \r\n    stretch\r\n    1.5s\r\n    ease-out\r\n    0s\r\n    alternate\r\n    infinite\r\n    none\r\n    running;\r\n          animation: \r\n    stretch\r\n    1.5s\r\n    ease-out\r\n    0s\r\n    alternate\r\n    infinite\r\n    none\r\n    running;\r\n}\r\n\r\n@-webkit-keyframes stretch {\r\n  0% {\r\n    background-color: #ffebdd;\r\n  }\r\n  50% {\r\n    background-color: #ffd4b6;\r\n  }\r\n  100% {\r\n    background-color: #ffebdd;\r\n  }\r\n}\r\n\r\n@keyframes stretch {\r\n  0% {\r\n    background-color: #ffebdd;\r\n  }\r\n  50% {\r\n    background-color: #ffd4b6;\r\n  }\r\n  100% {\r\n    background-color: #ffebdd;\r\n  }\r\n}\r\n\r\n.list-group-item .username, .list-group-item .userstatus {\r\n  text-overflow: ellipsis;\r\n  white-space: nowrap;\r\n  overflow: hidden;\r\n}\r\n\r\n.list-group-item .userdata {\r\n  max-width: calc(100% - 85px);\r\n}\r\n\r\n.noread {\r\n    position: absolute;\r\n    right: 10px;\r\n    top: 10px\r\n}", ""]);
 
 // exports
 
@@ -1036,7 +1073,7 @@ exports = module.exports = __webpack_require__(18)();
 
 
 // module
-exports.push([module.i, ".card-group {\r\n  height:100%;\r\n}\r\n\r\n.card {\r\n  border-radius: 0;\r\n  min-height: 100%;\r\n  padding:0;\r\n}\r\n\r\n\r\n.chat {\r\n  list-style: none;\r\n  margin: 0;\r\n  padding: 0;\r\n}\r\n\r\n.card-msg {\r\n  padding: 0;\r\n}\r\n\r\n.card-block {\r\n  overflow-y: scroll;\r\n  -ms-overflow-style: -ms-autohiding-scrollbar;\r\n}\r\n\r\n\r\n.messages {\r\n  position: relative;\r\n  list-style: none;\r\n  padding: 20px;\r\n  margin: 0;\r\n  height: 100%;\r\n  width: 100%;\r\n  margin-left: 10px;\r\n  margin-right: 10px;\r\n}\r\n\r\n.messages .message {\r\n  clear: both;\r\n  overflow: hidden;\r\n  margin-bottom: 10px;\r\n  -webkit-transition:all 0.5s linear;\r\n  transition: all 0.5s linear;\r\n}\r\n.messages .message.left .avatar {\r\n  background-color: #7FD7F7;\r\n  float: left;\r\n}\r\n.messages .message.left .text_wrapper {\r\n  background-color: #BFEBFB;\r\n  margin-left: 20px;\r\n}\r\n.messages .message.left .text_wrapper::after, .messages .message.left .text_wrapper::before {\r\n  right: 100%;\r\n  border-right-color: #BFEBFB;\r\n}\r\n.messages .message.left .text {\r\n  color: #333;\r\n}\r\n.messages .message.right .avatar {\r\n  background-color: #8FD57F;\r\n  float: right;\r\n}\r\n.messages .message.right .text_wrapper {\r\n  background-color: #C7EABF;\r\n  margin-right: 20px;\r\n  float: right;\r\n  text-align: right;\r\n  line-height: 1.2;\r\n}\r\n.messages .message.right .text_wrapper::after, .messages .message.right .text_wrapper::before {\r\n  left: 100%;\r\n  border-left-color: #C7EABF;\r\n}\r\n.messages .message.right .text {\r\n  color: #333;\r\n}\r\n\r\n.messages .message .avatar {\r\n  width: 45px;\r\n  height: 45px;\r\n  border-radius: 50%;\r\n  display: inline-block;\r\n  margin: 0!important;\r\n}\r\n.messages .message:not(.first) {\r\n  margin-top: -5px;\r\n}\r\n.messages .message:not(.first) .avatar {\r\n  opacity: 0;\r\n}\r\n.messages .message:not(.first) .text_wrapper::after, .messages .message:not(.first) .text_wrapper::before {\r\n  border-left-color: transparent;\r\n  border-right-color: transparent;\r\n}\r\n.messages .message .text_wrapper {\r\n  display: inline-block;\r\n  padding: 10px 20px;\r\n  border-radius: 6px;\r\n  max-width: calc(100% - 85px);\r\n  min-width: 100px;\r\n  position: relative;\r\n}\r\n.messages .message .text_wrapper::after, .messages .message .text_wrapper:before {\r\n  top: 10px;\r\n  border: solid transparent;\r\n  content: \" \";\r\n  height: 0;\r\n  width: 0;\r\n  position: absolute;\r\n  pointer-events: none;\r\n}\r\n.messages .message .text_wrapper::after {\r\n  border-width: 13px;\r\n  margin-top: 0px;\r\n}\r\n.messages .message .text_wrapper::before {\r\n  border-width: 0px;\r\n}\r\n.messages .message .text_wrapper .text {\r\n  font-size: 18px;\r\n  font-weight: 300;\r\n}\r\n.messages .message .text_wrapper .user {\r\n  font-size: 18px;\r\n  font-weight: 600;\r\n}\r\n\r\n.expand {\r\n  position: absolute;\r\n  bottom: 10px;\r\n  left: 10px;\r\n  right: 10px;\r\n}\r\n\r\ntime {\r\n  color: dimgrey;\r\n  font-size: small;\r\n}", ""]);
+exports.push([module.i, ".card-group {\r\n  height:100%;\r\n}\r\n\r\n.card {\r\n  border-radius: 0;\r\n  min-height: 100%;\r\n  padding:0;\r\n}\r\n\r\n\r\n.chat {\r\n  list-style: none;\r\n  margin: 0;\r\n  padding: 0;\r\n}\r\n\r\n.card-msg {\r\n  padding: 0;\r\n}\r\n\r\n.card-block {\r\n  overflow-y: scroll;\r\n  -ms-overflow-style: -ms-autohiding-scrollbar;\r\n}\r\n\r\n\r\n.messages {\r\n  position: relative;\r\n  list-style: none;\r\n  padding: 20px;\r\n  margin: 0;\r\n  height: 100%;\r\n  width: 100%;\r\n}\r\n\r\n.messages .message {\r\n  clear: both;\r\n  overflow: hidden;\r\n  margin-bottom: 10px;\r\n  -webkit-transition:all 0.5s linear;\r\n  transition: all 0.5s linear;\r\n}\r\n.messages .message.left .avatar {\r\n  background-color: #7FD7F7;\r\n  float: left;\r\n}\r\n.messages .message.left .text_wrapper {\r\n  background-color: #BFEBFB;\r\n  margin-left: 20px;\r\n}\r\n.messages .message.left .text_wrapper::after, .messages .message.left .text_wrapper::before {\r\n  right: 100%;\r\n  border-right-color: #BFEBFB;\r\n}\r\n.messages .message.left .text {\r\n  color: #333;\r\n}\r\n.messages .message.right .avatar {\r\n  background-color: #8FD57F;\r\n  float: right;\r\n}\r\n.messages .message.right .text_wrapper {\r\n  background-color: #C7EABF;\r\n  margin-right: 20px;\r\n  float: right;\r\n  text-align: right;\r\n  line-height: 1.2;\r\n}\r\n.messages .message.right .text_wrapper::after, .messages .message.right .text_wrapper::before {\r\n  left: 100%;\r\n  border-left-color: #C7EABF;\r\n}\r\n.messages .message.right .text {\r\n  color: #333;\r\n}\r\n\r\n.messages .message .avatar {\r\n  width: 45px;\r\n  height: 45px;\r\n  border-radius: 50%;\r\n  display: inline-block;\r\n  margin: 0!important;\r\n}\r\n.messages .message:not(.first) {\r\n  margin-top: -5px;\r\n}\r\n.messages .message:not(.first) .avatar {\r\n  opacity: 0;\r\n}\r\n.messages .message:not(.first) .text_wrapper::after, .messages .message:not(.first) .text_wrapper::before {\r\n  border-left-color: transparent;\r\n  border-right-color: transparent;\r\n}\r\n.messages .message .text_wrapper {\r\n  display: inline-block;\r\n  padding: 10px 20px;\r\n  border-radius: 6px;\r\n  max-width: calc(100% - 85px);\r\n  min-width: 100px;\r\n  position: relative;\r\n}\r\n.messages .message .text_wrapper::after, .messages .message .text_wrapper:before {\r\n  top: 10px;\r\n  border: solid transparent;\r\n  content: \" \";\r\n  height: 0;\r\n  width: 0;\r\n  position: absolute;\r\n  pointer-events: none;\r\n}\r\n.messages .message .text_wrapper::after {\r\n  border-width: 13px;\r\n  margin-top: 0px;\r\n}\r\n.messages .message .text_wrapper::before {\r\n  border-width: 0px;\r\n}\r\n.messages .message .text_wrapper .text {\r\n  font-size: 18px;\r\n  font-weight: 300;\r\n}\r\n.messages .message .text_wrapper .user {\r\n  font-size: 18px;\r\n  font-weight: 600;\r\n}\r\n\r\ntime {\r\n  color: dimgrey;\r\n  font-size: small;\r\n}\r\n\r\n.expand {\r\n  width: 100%;\r\n}", ""]);
 
 // exports
 
@@ -1072,7 +1109,7 @@ exports = module.exports = __webpack_require__(18)();
 
 
 // module
-exports.push([module.i, ".videoImg {\r\n  margin-right: -100px;\r\n  z-index: 1000;\r\n}\r\n\r\n.videoUser {\r\n  position: relative;\r\n  display: inline-block;\r\n  z-index: 1000;\r\n}\r\n\r\n.videoUser .avatar {\r\n  margin:5px;\r\n  position: absolute;\r\n  bottom:0;\r\n  right:0;\r\n  z-index: 1000;\r\n}\r\n\r\n#video {\r\n  position: absolute;\r\n  top: 0;\r\n  right: 0;\r\n  height: 100px;\r\n  width: auto;\r\n  z-index: 1000;\r\n}\r\n\r\n.abs-container {\r\n  position: absolute;\r\n  top: 0;\r\n  left: 0;\r\n  right: 0;\r\n}", ""]);
+exports.push([module.i, ".videoImg {\r\n  margin-right: -100px;\r\n  z-index: 1000;\r\n}\r\n\r\n.videoUser {\r\n  position: relative;\r\n  display: inline-block;\r\n  z-index: 1000;\r\n}\r\n\r\n.videoUser .avatar {\r\n  margin:5px;\r\n  position: absolute;\r\n  bottom:0;\r\n  right:0;\r\n  z-index: 1000;\r\n}\r\n\r\n#video {\r\n  position: absolute;\r\n  top: 0;\r\n  right: 0;\r\n  height: 100px;\r\n  width: auto;\r\n  z-index: 1000;\r\n}\r\n\r\n.videoUser:hover, #video:hover {\r\n  opacity: .5;\r\n}\r\n\r\n.expand {\r\n  width: 100%;\r\n}\r\n\r\n.abs-container {\r\n  position: absolute;\r\n  top: 0;\r\n  left: 0;\r\n  right: 0;\r\n}", ""]);
 
 // exports
 
@@ -1121,7 +1158,7 @@ module.exports = module.exports.toString();
 /***/ 528:
 /***/ (function(module, exports) {
 
-module.exports = "<div class=\"container-fluid\" *ngIf=\"loggedIn\">\n\t<div class=\"card-group\">\n\t\t<div class=\"card col-md-4 flex-col\">\n\t\t\t<user class=\"card-header\"></user>\n\t\t\t<channels class=\"flex-grow\"></channels>\n\t\t\t<channel-add class=\"card-footer\"></channel-add>\n\t\t</div>\n\n\t\t<div class=\"card col-md-8 flex-col\">\n\t\t\t<chat-status></chat-status>\n\t\t\t<chat-video></chat-video>\n\t\t\t<chat-messages id=\"scroll\" class=\"card-block card-msg flex-grow\"></chat-messages>\n\t\t\t<chat-input class=\"card-footer\"></chat-input>\n\t\t</div>\n\n\t</div>\n</div>\n\n<div class=\"container\" *ngIf=\"!loggedIn && ready\">\n\t<login></login>\n</div>"
+module.exports = "<div class=\"container-fluid\" *ngIf=\"loggedIn\">\n\t<div class=\"card-group\">\n\t\t<div class=\"card col-md-4 flex-col\">\n\t\t\t<user class=\"card-header\"></user>\n\t\t\t<channels class=\"flex-grow\"></channels>\n\t\t\t<channel-add class=\"card-footer\"></channel-add>\n\t\t</div>\n\n\t\t<div class=\"card col-md-8 flex-col\">\n\t\t\t<chat-status></chat-status>\n\t\t\t<chat-video></chat-video>\n\t\t\t<chat-messages id=\"scroll\" class=\"card-block card-msg flex-grow\"></chat-messages>\n\t\t\t<chat-input class=\"card-footer\"></chat-input>\n\t\t</div>\n\n\t</div>\n</div>\n\n<div class=\"container\" *ngIf=\"!loggedIn && ready\">\n\t<login></login>\n</div>\n\n<div id=\"notif\">\n\t{{notification}}\n</div>"
 
 /***/ }),
 
@@ -1135,21 +1172,21 @@ module.exports = "<div>\n  <i class=\"fa fa-plus-square-o\" aria-hidden=\"true\"
 /***/ 530:
 /***/ (function(module, exports) {
 
-module.exports = "<ul *ngIf=\"channels\" class=\"list-group list-group-flush\">\n  <li \n    *ngFor=\"let chn of showChannels\"\n    class=\"list-group-item\"\n    [ngClass]=\"isSelected(chn) ? 'active' : ''\"\n    (click)=\"enterChannel(chn)\"\n  >\n      <img [src]=\"'assets/avatars/'+ chn.avatar || chn.user.avatar\" class=\"img-fluid avatar\"/>\n      <div class=\"flex-column userdata\">\n        <div class=\"username\">{{chn.showname}}</div>\n        <div class=\"userstatus\"><small>{{chn.description || chn.user.status}}</small></div>\n      </div>\n\n  </li>\n</ul>\n"
+module.exports = "<ul *ngIf=\"channels\" class=\"list-group list-group-flush\">\n  <li \n    *ngFor=\"let chn of showChannels\"\n    class=\"list-group-item\"\n    [ngClass]=\"{'active': isSelected(chn), 'new': noRead(chn)}\"\n    (click)=\"enterChannel(chn)\"\n  >\n      <img [src]=\"'assets/avatars/'+ chn.avatar || chn.user.avatar\" class=\"img-fluid avatar\"/>\n      <div class=\"flex-column userdata\">\n        <div class=\"username\">{{chn.showname}}</div>\n        <div class=\"userstatus\"><small>{{chn.description || chn.user.status}}</small></div>\n        <span class=\"noread badge badge-danger\" *ngIf=\"noRead(chn)\">{{noRead(chn)}}</span>\n      </div>\n\n  </li>\n</ul>\n"
 
 /***/ }),
 
 /***/ 531:
 /***/ (function(module, exports) {
 
-module.exports = "<div class=\"input-group\">\n  <input id=\"btn-input\"\n    type=\"text\"\n    contenteditable=true\n    class=\"form-control input-sm\"\n    (keyup.enter)=\"sendMsg()\"\n    [placeholder]=\"!selectedChannel.id ? 'First select a channel...' : 'Type your message here...'\"\n    autocomplete=\"off\"\n    [(ngModel)]=\"messageText\"\n    (keyup)=\"typing($event)\"\n    [disabled]=\"!selectedChannel.id\"\n  >\n\n    <label class=\"btn btn-info btn-file\" id=\"btn-chat-upload\" [ngClass]=\"{disabled: !selectedChannel.id}\"><!--(click)='uploadFile()'-->\n      <i class=\"fa fa-upload\" aria-hidden=\"true\"></i><input type=\"file\" style=\"display: none;\" #fileInput [disabled]=\"!selectedChannel.id\" (change)=\"upload(file.files)\">\n    </label>\n    <button class=\"btn btn-danger\" id=\"btn-video\" (click)=\"videoActive ? stopVideo() : startVideo()\" [disabled]=\"!selectedChannel.id\">\n      <i class=\"fa fa-video-camera\" aria-hidden=\"true\"></i>\n    </button>\n\n\n</div>"
+module.exports = "<div class=\"input-group\">\n  <input id=\"btn-input\"\n    type=\"text\"\n    contenteditable=true\n    class=\"form-control input-sm\"\n    (keyup.enter)=\"sendMsg()\"\n    [placeholder]=\"!selectedChannel.id ? 'First select a channel...' : 'Type your message here...'\"\n    autocomplete=\"off\"\n    [(ngModel)]=\"messageText\"\n    (keyup)=\"typing($event)\"\n    [disabled]=\"!selectedChannel.id\"\n  >\n\n    <label class=\"btn btn-info btn-file\" id=\"btn-chat-upload\" [ngClass]=\"{disabled: !selectedChannel.id}\"><!--(click)='uploadFile()'-->\n      <i class=\"fa fa-upload\" aria-hidden=\"true\"></i><input type=\"file\" style=\"display: none;\" #fileInput [disabled]=\"!selectedChannel.id\" (change)=\"uploadFile($event)\">\n    </label>\n    <button class=\"btn btn-danger\" id=\"btn-video\" (click)=\"videoActive ? stopVideo() : startVideo()\" [disabled]=\"!selectedChannel.id\">\n      <i class=\"fa fa-video-camera\" aria-hidden=\"true\"></i>\n    </button>\n\n\n</div>"
 
 /***/ }),
 
 /***/ 532:
 /***/ (function(module, exports) {
 
-module.exports = "<ul class=\"messages flex-grow\">\n  <span *ngIf=\"selectedChannel.id && messages[selectedChannel.id]\" class=\"expand\">\n    <li *ngFor=\"let message of messages[selectedChannel.id]\"\n        class=\"message\"\n        [ngClass]=\"[\n          isMine(message) ? 'right' : 'left',\n          message.first? 'first' : ''\n          ]\"\n    >\n      <div class=\"avatar\"></div>\n      <div class=\"text_wrapper\">\n        <span class=\"user\" *ngIf=\"message.first\">{{message.author.name}}</span>\n        <div class=\"text\">\n          {{message.text}}\n        </div>\n        <time>{{message.sentAt.toLocaleString()}}</time>\n      </div>\n    </li>\n  </span>\n</ul>\n"
+module.exports = "<ul class=\"messages flex-grow\">\n  <span *ngIf=\"selectedChannel.id && messages[selectedChannel.id]\" class=\"expand\">\n    <span class=\"bottom\">\n    <li *ngFor=\"let message of messages[selectedChannel.id]\"\n        class=\"message\"\n        [ngClass]=\"[\n          isMine(message) ? 'right' : 'left',\n          message.first? 'first' : ''\n          ]\"\n    >\n      <div class=\"avatar\"></div>\n      <div class=\"text_wrapper\">\n        <span class=\"user\" *ngIf=\"message.first\">{{message.author.name}}</span>\n        <div *ngIf=\"message.type !== 'text'\">\n          <a [href]=\"sanitize(message.path)\">\n            <i *ngIf=\"!message.type.includes('image')\" class=\"fa fa-file fa-3\" aria-hidden=\"true\"></i>\n            <img *ngIf=\"message.type.includes('image')\" [src]=\"sanitize(message.path)\" alt=\"\">\n          </a>\n        </div>\n        <div class=\"text\">\n          {{message.text}}\n        </div>\n        <time>{{message.sentAt.toLocaleString()}}</time>\n      </div>\n    </li>\n    </span>\n  </span>\n</ul>\n"
 
 /***/ }),
 
@@ -1254,8 +1291,11 @@ var ChannelsService = (function () {
     ChannelsService.prototype.sendMsg = function (messageText) {
         var chnID = this.selectedChannel.id;
         var userName = this.loggedUser.name;
-        var newMessage = new __WEBPACK_IMPORTED_MODULE_4__model_message__["a" /* Message */](this.loggedUser, this.selectedChannel, messageText);
+        var newMessage = new __WEBPACK_IMPORTED_MODULE_4__model_message__["a" /* Message */](this.loggedUser, this.selectedChannel, 'text', messageText);
         this.socketService.sendMsg(newMessage);
+    };
+    ChannelsService.prototype.sendFile = function (file) {
+        this.socketService.sendFile(file, this.selectedChannel);
     };
     ChannelsService.prototype.sendVideo = function (image) {
         this.socketService.sendVideo(image, this.selectedChannel);
@@ -1288,7 +1328,7 @@ var ChannelsService = (function () {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_angular_2_local_storage__ = __webpack_require__(290);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_angular_2_local_storage___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_angular_2_local_storage__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__socket_service__ = __webpack_require__(25);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__model_user__ = __webpack_require__(123);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__model_user__ = __webpack_require__(124);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return LoginService; });
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;

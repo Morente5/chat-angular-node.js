@@ -32,8 +32,6 @@
   margin: 0;
   height: 100%;
   width: 100%;
-  margin-left: 10px;
-  margin-right: 10px;
 }
 
 .messages .message {
@@ -126,14 +124,11 @@
   font-weight: 600;
 }
 
-.expand {
-  position: absolute;
-  bottom: 10px;
-  left: 10px;
-  right: 10px;
-}
-
 time {
   color: dimgrey;
   font-size: small;
+}
+
+.expand {
+  width: 100%;
 }

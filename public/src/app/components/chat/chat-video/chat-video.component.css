@@ -26,6 +26,14 @@
   z-index: 1000;
 }
 
+.videoUser:hover, #video:hover {
+  opacity: .5;
+}
+
+.expand {
+  width: 100%;
+}
+
 .abs-container {
   position: absolute;
   top: 0;

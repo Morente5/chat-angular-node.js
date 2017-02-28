@@ -18,10 +18,10 @@ var express = require('express'),
     app = express(),
     server = require('http').Server(app),
     io = require('socket.io')(server),
-    ss = require('socket.io-stream'),
-    path = require('path');
-dl = require("delivery"),
-    fs = require("fs");
+    path = require('path'),
+    dl = require("delivery"),
+    fs = require("fs"),
+    mime = require('mime');
 
 app.use(express.static('public/dist'));
 
@@ -35,7 +35,6 @@ var connectedUsers = [],
 io.on('connection', function (socket) {
 
     let delivery = dl.listen(socket);
-    let socketStream = ss(socket);
 
     socket.user = { name: '', avatar: '', status: '' };
     socket.emit('load', channels, connectedUsers);
@@ -49,7 +48,7 @@ io.on('connection', function (socket) {
         socket.emit('logged-in', user);
         console.log(user.name, 'logged in');
         //console.log('connected users', connectedUsers.map(function (a) { return a.name; }));
-
+        socket.broadcast.emit('userloggedin', user);
         io.sockets.emit('load', channels, connectedUsers);
     });
 
@@ -65,6 +64,7 @@ io.on('connection', function (socket) {
     });
 
     socket.on('logout', function () {
+        socket.broadcast.emit('userloggedout', socket.user);
         socket.broadcast.emit('stvideo', socket.user);
         disconnect(socket.user);
         //console.log('connected users', connectedUsers.map(function (a) { return a.name; }));
@@ -72,6 +72,7 @@ io.on('connection', function (socket) {
         console.log(socket.user.name, 'logged out');
     });
     socket.on('disconnect', function () {
+        socket.broadcast.emit('userloggedout', socket.user);
         socket.broadcast.emit('stvideo', socket.user);
         disconnect(socket.user);
         //console.log('connected users', connectedUsers.map(function (a) { return a.name; }));
@@ -115,18 +116,31 @@ io.on('connection', function (socket) {
 
     delivery.on('receive.success', function (file) {
         var params = file.params;
-        console.log(params);
-        fs.writeFile(file.name, file.buffer, function (err) {
+        fs.writeFile('public/dist/assets/' + file.name, file.buffer, function (err) {
             if (err) {
                 console.log('File could not be saved.');
             } else {
+                var filetype;
+                if (params.type === 'message') {
+                    filetype = mime.lookup('public\\dist\\assets\\' + file.name);
+                    console.log(filetype);
+                    console.log(file.name);
+                    var pathz = path.resolve(__dirname + '\\..\\public\\dist\\assets\\' + file.name);
+                    message = {author: params.user, channel: params.channel, type: filetype, text: file.name, first: false, path: pathz};
+                    if (params.channel.priv) {
+                        io.sockets.in(params.channel.id).emit('message', message);
+                        socket.emit('message', message);
+                    } else {
+                        io.sockets.emit('message', message);
+                    }
+                }
                 console.log('File saved.');
             }
         });
     });
 
     delivery.on('delivery.connect', function (delivery) {
-
+        console.log('sth');
         /*delivery.send({
             name: 'sample-image.jpg',
             path: './sample-image.jpg',
@@ -137,11 +151,6 @@ io.on('connection', function (socket) {
             console.log('File successfully sent to client!');
         });
 
-    });
-
-    socketStream.on('profile-image', function (stream, data) {
-        let filename = path.basename(data.name);
-        stream.pipe(fs.createWriteStream(filename));
     });
 
 });

@@ -1,5 +1,6 @@
 <ul class="messages flex-grow">
   <span *ngIf="selectedChannel.id && messages[selectedChannel.id]" class="expand">
+    <span class="bottom">
     <li *ngFor="let message of messages[selectedChannel.id]"
         class="message"
         [ngClass]="[
@@ -10,11 +11,18 @@
       <div class="avatar"></div>
       <div class="text_wrapper">
         <span class="user" *ngIf="message.first">{{message.author.name}}</span>
+        <div *ngIf="message.type !== 'text'">
+          <a [href]="sanitize(message.path)">
+            <i *ngIf="!message.type.includes('image')" class="fa fa-file fa-3" aria-hidden="true"></i>
+            <img *ngIf="message.type.includes('image')" [src]="sanitize(message.path)" alt="">
+          </a>
+        </div>
         <div class="text">
           {{message.text}}
         </div>
         <time>{{message.sentAt.toLocaleString()}}</time>
       </div>
     </li>
+    </span>
   </span>
 </ul>

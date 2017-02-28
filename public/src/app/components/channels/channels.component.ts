@@ -18,6 +18,7 @@ export class ChannelsComponent implements OnInit {
   selectedChannel: Channel;
 
   loggedUser: User;
+  messages;
 
   constructor(
     private loginService: LoginService,
@@ -36,6 +37,16 @@ export class ChannelsComponent implements OnInit {
 
     this.channelsService.subjectSelectedChannel.subscribe(channel => {
       this.selectedChannel = channel;
+      if (this.messages && this.messages[channel.id] && this.loggedUser) {
+        this.messages[channel.id].forEach(msg => msg.isRead = true);
+      }
+    });
+
+    this.channelsService.subjectMessages.subscribe(messages => {
+      this.messages = messages;
+      if (this.messages && this.messages[this.selectedChannel.id] && this.loggedUser) {
+        this.messages[this.selectedChannel.id].forEach(msg => msg.isRead = true);
+      }
     });
   }
 
@@ -49,6 +60,11 @@ export class ChannelsComponent implements OnInit {
 
   isSelected(channel) {
     return channel.id === this.selectedChannel.id;
+  }
+
+  noRead(channel) {
+    return (this.messages[channel.id] && !this.isSelected(channel)) ?
+      this.messages[channel.id].reduce((noread, msg) => msg.isRead ? noread : ++noread, 0) : 0;
   }
 
 }

@@ -12,7 +12,7 @@
   >
 
     <label class="btn btn-info btn-file" id="btn-chat-upload" [ngClass]="{disabled: !selectedChannel.id}"><!--(click)='uploadFile()'-->
-      <i class="fa fa-upload" aria-hidden="true"></i><input type="file" style="display: none;" #fileInput [disabled]="!selectedChannel.id" (change)="upload(file.files)">
+      <i class="fa fa-upload" aria-hidden="true"></i><input type="file" style="display: none;" #fileInput [disabled]="!selectedChannel.id" (change)="uploadFile($event)">
     </label>
     <button class="btn btn-danger" id="btn-video" (click)="videoActive ? stopVideo() : startVideo()" [disabled]="!selectedChannel.id">
       <i class="fa fa-video-camera" aria-hidden="true"></i>

@@ -2,13 +2,14 @@
   <li 
     *ngFor="let chn of showChannels"
     class="list-group-item"
-    [ngClass]="isSelected(chn) ? 'active' : ''"
+    [ngClass]="{'active': isSelected(chn), 'new': noRead(chn)}"
     (click)="enterChannel(chn)"
   >
       <img [src]="'assets/avatars/'+ chn.avatar || chn.user.avatar" class="img-fluid avatar"/>
       <div class="flex-column userdata">
         <div class="username">{{chn.showname}}</div>
         <div class="userstatus"><small>{{chn.description || chn.user.status}}</small></div>
+        <span class="noread badge badge-danger" *ngIf="noRead(chn)">{{noRead(chn)}}</span>
       </div>
 
   </li>

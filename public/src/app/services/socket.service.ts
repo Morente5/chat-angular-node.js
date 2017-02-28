@@ -33,6 +33,7 @@ export class SocketService {
   subjectReady: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
 
   subjectMessage: BehaviorSubject<any> = new BehaviorSubject<any>('');
+  subjectUserNotif: BehaviorSubject<string> = new BehaviorSubject<string>('');
   constructor() {
 
     this.subjectChannels.subscribe(channels => this.channels = channels);
@@ -69,7 +70,7 @@ export class SocketService {
     });
 
     this.socket.on('message', message => {
-      const tempMessage = new Message(message.author, message.channel, message.text, message.first);
+      const tempMessage = new Message(message.author, message.channel, message.type, message.text, message.first, message.path || '');
       this.subjectMessage.next(tempMessage);
     });
 
@@ -77,7 +78,6 @@ export class SocketService {
       const chnID = channel.priv ? user.id : channel.id;
       this.channels[this.channels.findIndex(
         chn => chnID === chn.id)].typing.push(new User(user.name, user.avatar, user.status, user.id));
-      console.log(this.channels[this.channels.findIndex(chn => chnID === chn.id)]);
       this.subjectTyping.next(this.channels);
     });
 
@@ -87,7 +87,6 @@ export class SocketService {
       const j = this.channels[i].typing.findIndex(usr => user.id === usr.id);
       this.channels[i].typing.splice(j, 1);
       this.subjectTyping.next(this.channels);
-      console.log('stoptyping', user, this.channels.find(chn => chnID === chn.id));
     });
 
     this.delivery.on('delivery.connect', delivery => {
@@ -128,6 +127,13 @@ export class SocketService {
       });
     });
 
+    this.socket.on('userloggedin', user => {
+      this.subjectUserNotif.next(user.name + ' logged in');
+    });
+    this.socket.on('userloggedout', user => {
+      this.subjectUserNotif.next(user.name + ' logged out');
+    });
+
     window.setTimeout( () => this.subjectReady.next(true), 800);
   }
 
@@ -157,5 +163,9 @@ export class SocketService {
   }
   stopVideo() {
     this.socket.emit('stopVideo', this.loggedUser);
+  }
+
+  sendFile(file, channel: Channel) {
+    this.delivery.send(file, {user: this.loggedUser, channel: channel, type: 'message'});
   }
 }

@@ -9,19 +9,43 @@
 .list-group-flush .list-group-item {
   flex-shrink: 0;
   border-radius: 0;
-  border-bottom: 1px solid #B3E095;
+  border-bottom: 1px solid #8FD57F;
 }
 .list-group-item {
   background-color: #fdfefc;
-  border: 1px solid #B3E095;
+  border: 1px solid #8FD57F;
   border-left: 0;
   border-right: 0;
+  position: relative;
 }
 
 .list-group-item.active {
     color: whitesmoke;
-    background-color: #B3E095;
-    border-color: #B3E095;
+    background-color: #8FD57F;
+    border-color: #8FD57F;
+}
+.list-group-item.new {
+  animation: 
+    stretch
+    1.5s
+    ease-out
+    0s
+    alternate
+    infinite
+    none
+    running;
+}
+
+@keyframes stretch {
+  0% {
+    background-color: #ffebdd;
+  }
+  50% {
+    background-color: #ffd4b6;
+  }
+  100% {
+    background-color: #ffebdd;
+  }
 }
 
 .list-group-item .username, .list-group-item .userstatus {
@@ -32,4 +56,10 @@
 
 .list-group-item .userdata {
   max-width: calc(100% - 85px);
+}
+
+.noread {
+    position: absolute;
+    right: 10px;
+    top: 10px
 }
