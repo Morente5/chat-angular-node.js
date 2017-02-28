@@ -8,7 +8,7 @@
           message.first? 'first' : ''
           ]"
     >
-      <div class="avatar"></div>
+      <img [src]="message.author.avatar" class="img-fluid avatar"/>
       <div class="text_wrapper">
         <span class="user" *ngIf="message.first">{{message.author.name}}</span>
         <div *ngIf="message.type !== 'text'">
