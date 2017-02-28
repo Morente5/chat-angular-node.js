@@ -117,11 +117,11 @@ io.on('connection', function (socket) {
     delivery.on('receive.success', function (file) {
         var params = file.params;
 
-        fs.writeFile('assets/' + file.name, file.buffer, function (err) {
+        fs.writeFile('public/dist/assets/' + file.name, file.buffer, function (err) {
             if (err) {
                 console.log('File could not be saved.');
             } else {
-                var filetype = mime.lookup('assets/' + file.name);
+                var filetype = mime.lookup('public/dist/assets/' + file.name);
                 var pathz = '/assets/' + file.name;
                 console.log(params.type);
                 if (params.type === 'message') {
